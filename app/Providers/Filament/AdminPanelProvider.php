@@ -2,11 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\DirectivoDashboard;
+use App\Filament\Pages\DocenteDashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -25,21 +28,25 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('app')
+            ->path('app')
             ->login()
+            ->profile()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#1d6362',
+                'success' => '#6b9a34',
+                'info' => '#99ce93',
+                'warning' => '#f8c508',
+                'danger' => '#f50404',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboards personalizados según rol
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // Widgets personalizados descubiertos automáticamente
             ])
             ->middleware([
                 EncryptCookies::class,

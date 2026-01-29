@@ -1,0 +1,224 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\AttendanceStatus;
+use App\Models\Attendance;
+use App\Models\Campus;
+use App\Models\Schedule;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AttendanceService
+{
+    public function __construct(
+        private GeolocationService $geolocationService
+    ) {
+    }
+
+    /**
+     * Register attendance for a user.
+     *
+     * @param User $user
+     * @param Campus $campus
+     * @param float $latitude
+     * @param float $longitude
+     * @param float|null $distance
+     * @param Request|null $request
+     * @return Attendance
+     */
+    public function registerAttendance(
+        User $user,
+        Campus $campus,
+        float $latitude,
+        float $longitude,
+        ?float $distance = null,
+        ?Request $request = null
+    ): Attendance {
+        // Get today's schedule for this user at this campus
+        $schedule = $this->getTodaySchedule($user, $campus);
+
+        // Calculate distance if not provided
+        if ($distance === null) {
+            $locationCheck = $this->geolocationService->isWithinCampusRadius(
+                $latitude,
+                $longitude,
+                $campus
+            );
+            $distance = $locationCheck['distance'];
+        }
+
+        // Calculate status based on schedule
+        $status = $this->calculateAttendanceStatus($schedule);
+
+        // Build device info from request
+        $deviceInfo = null;
+        if ($request) {
+            $deviceInfo = [
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ];
+        }
+
+        // Create attendance record
+        return Attendance::create([
+            'user_id' => $user->id,
+            'campus_id' => $campus->id,
+            'schedule_id' => $schedule?->id,
+            'date' => now()->toDateString(),
+            'check_in_time' => now(),
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'distance_from_campus' => $distance,
+            'status' => $status,
+            'device_info' => $deviceInfo,
+        ]);
+    }
+
+    /**
+     * Get today's schedule for a user at a campus.
+     *
+     * @param User $user
+     * @param Campus $campus
+     * @return Schedule|null
+     */
+    public function getTodaySchedule(User $user, Campus $campus): ?Schedule
+    {
+        $dayOfWeek = now()->dayOfWeek;
+
+        return Schedule::where('user_id', $user->id)
+            ->where('campus_id', $campus->id)
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    /**
+     * Calculate attendance status based on schedule.
+     *
+     * @param Schedule|null $schedule
+     * @return AttendanceStatus
+     */
+    public function calculateAttendanceStatus(?Schedule $schedule): AttendanceStatus
+    {
+        if (!$schedule) {
+            // No schedule for today, default to on_time
+            return AttendanceStatus::ON_TIME;
+        }
+
+        $now = now();
+        $checkInTime = Carbon::parse($schedule->check_in_time);
+        $toleranceTime = $checkInTime->copy()->addMinutes($schedule->tolerance_minutes);
+
+        // Set the date to today for comparison
+        $checkInTime->setDate($now->year, $now->month, $now->day);
+        $toleranceTime->setDate($now->year, $now->month, $now->day);
+
+        if ($now->lte($toleranceTime)) {
+            return AttendanceStatus::ON_TIME;
+        }
+
+        return AttendanceStatus::LATE;
+    }
+
+    /**
+     * Check if user has already registered attendance today for a campus.
+     *
+     * @param User $user
+     * @param Campus $campus
+     * @return bool
+     */
+    public function hasRegisteredToday(User $user, Campus $campus): bool
+    {
+        return Attendance::where('user_id', $user->id)
+            ->where('campus_id', $campus->id)
+            ->whereDate('check_in_time', today())
+            ->exists();
+    }
+
+    /**
+     * Get user statistics for a date range.
+     *
+     * @param User $user
+     * @param Carbon|null $startDate
+     * @param Carbon|null $endDate
+     * @return array
+     */
+    public function getUserStats(User $user, ?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? now()->startOfMonth();
+        $endDate = $endDate ?? now()->endOfMonth();
+
+        $attendances = Attendance::where('user_id', $user->id)
+            ->whereBetween('check_in_time', [$startDate, $endDate])
+            ->get();
+
+        $stats = [
+            'total' => $attendances->count(),
+            'on_time' => $attendances->where('status', AttendanceStatus::ON_TIME)->count(),
+            'late' => $attendances->where('status', AttendanceStatus::LATE)->count(),
+            'absent' => $attendances->where('status', AttendanceStatus::ABSENT)->count(),
+            'justified' => $attendances->where('status', AttendanceStatus::JUSTIFIED)->count(),
+        ];
+
+        // Calculate punctuality percentage
+        $stats['punctuality'] = $stats['total'] > 0
+            ? round(($stats['on_time'] / $stats['total']) * 100, 1)
+            : 0;
+
+        // Calculate attendance rate (present / expected)
+        $workDays = $this->getWorkDaysCount($user, $startDate, $endDate);
+        $stats['attendance_rate'] = $workDays > 0
+            ? round((($stats['on_time'] + $stats['late'] + $stats['justified']) / $workDays) * 100, 1)
+            : 0;
+
+        return $stats;
+    }
+
+    /**
+     * Get expected work days count based on user schedules.
+     *
+     * @param User $user
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return int
+     */
+    private function getWorkDaysCount(User $user, Carbon $startDate, Carbon $endDate): int
+    {
+        $scheduledDays = $user->schedules()
+            ->where('is_active', true)
+            ->pluck('day_of_week')
+            ->toArray();
+
+        if (empty($scheduledDays)) {
+            return 0;
+        }
+
+        $count = 0;
+        $current = $startDate->copy();
+
+        while ($current->lte($endDate)) {
+            if (in_array($current->dayOfWeek, $scheduledDays)) {
+                $count++;
+            }
+            $current->addDay();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Get today's attendance for a user.
+     *
+     * @param User $user
+     * @return Attendance|null
+     */
+    public function getTodayAttendance(User $user): ?Attendance
+    {
+        return Attendance::where('user_id', $user->id)
+            ->whereDate('check_in_time', today())
+            ->first();
+    }
+}
