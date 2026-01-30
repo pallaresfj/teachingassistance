@@ -39,7 +39,7 @@ class AttendanceResource extends Resource
 
     public static function canAccess(): bool
     {
-        return Auth::check() && (Auth::user()->isSoporte() || Auth::user()->isDirectivo());
+        return Auth::check() && Auth::user()->isDirectivo();
     }
 
     public static function form(Schema $schema): Schema

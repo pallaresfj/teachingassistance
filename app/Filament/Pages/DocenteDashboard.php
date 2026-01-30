@@ -16,7 +16,7 @@ class DocenteDashboard extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
     
-    protected static ?string $navigationLabel = 'Mi Dashboard';
+    protected static ?string $navigationLabel = 'Dashboard Docente';
     
     protected static ?int $navigationSort = 1;
 
