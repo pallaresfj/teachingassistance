@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@iedagropivijay.edu.co',
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
+            'role' => UserRole::SOPORTE,
+            'is_active' => true,
         ]);
     }
 }
