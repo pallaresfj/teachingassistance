@@ -88,19 +88,42 @@ class AttendanceScanner extends Component
             return;
         }
 
+        // Check if user has schedule assigned for this campus today
+        $attendanceService = app(AttendanceService::class);
+        $todaySchedule = $attendanceService->getTodaySchedule(auth()->user(), $campus);
+
+        if (!$todaySchedule) {
+            $dayName = now()->locale('es')->isoFormat('dddd');
+            $this->errorMessage = "No tiene horario asignado en la sede '{$campus->name}' para el día {$dayName}. Verifique que esté escaneando el código QR de la sede correcta.";
+            $this->scanning = true;
+            return;
+        }
+
+        // Check if current time is within schedule time range
+        $now = now();
+        $checkOutTimeStr = $todaySchedule->check_out_time instanceof \Carbon\Carbon 
+            ? $todaySchedule->check_out_time->format('H:i:s')
+            : $todaySchedule->check_out_time;
+        $checkOutTime = \Carbon\Carbon::today()->setTimeFromTimeString($checkOutTimeStr);
+
+        if ($now->gt($checkOutTime)) {
+            $this->errorMessage = "El horario de registro para hoy ha finalizado. Su hora de salida programada era a las {$checkOutTime->format('H:i')}.";
+            $this->scanning = true;
+            return;
+        }
+
         // Check if within radius
         $geoService = app(GeolocationService::class);
         $locationCheck = $geoService->isWithinCampusRadius($this->latitude, $this->longitude, $campus);
 
         if (!$locationCheck['within_radius']) {
             $distance = $geoService->formatDistance($locationCheck['distance']);
-            $this->errorMessage = "Está fuera del radio permitido. Distancia: {$distance}";
+            $this->errorMessage = "Su teléfono móvil indica que usted está a {$distance} de la sede {$campus->name}. Revise su configuración o acérquese a la sede correspondiente.";
             $this->scanning = true;
             return;
         }
 
         // Check if already registered today
-        $attendanceService = app(AttendanceService::class);
         if ($attendanceService->hasRegisteredToday(auth()->user(), $campus)) {
             $this->alreadyRegistered = true;
             $this->infoMessage = 'Ya ha registrado su asistencia hoy en esta sede.';

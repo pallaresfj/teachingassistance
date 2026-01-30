@@ -16,7 +16,7 @@
             {{-- Shift Details Card --}}
             <div class="bg-white rounded-xl shadow-sm border p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Hoy</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,12 +33,36 @@
                         <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 16l-4-4m0 0l4-4m-4 4h14" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Entrada</p>
+                            <p class="font-semibold text-gray-900">{{ \Carbon\Carbon::parse($todaySchedule->check_in_time)->format('H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Salida</p>
+                            <p class="font-semibold text-gray-900">{{ \Carbon\Carbon::parse($todaySchedule->check_out_time)->format('H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">Horario</p>
-                            <p class="font-semibold text-gray-900">{{ $todaySchedule->time_range }}</p>
+                            <p class="text-sm text-gray-500">Tolerancia</p>
+                            <p class="font-semibold text-gray-900">{{ $todaySchedule->tolerance_minutes }} min</p>
                         </div>
                     </div>
                 </div>
@@ -158,19 +182,6 @@
                         <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" />
                     </svg>
                     <span>Retardo</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
-                    </svg>
-                    <span>Falta</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M9 1.5H5.625c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5zm6.61 10.936a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 14.47a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
-                        <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />
-                    </svg>
-                    <span>Justificado</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 24 24">

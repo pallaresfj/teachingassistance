@@ -109,14 +109,29 @@ class AttendanceService
         }
 
         $now = now();
-        $checkInTime = Carbon::parse($schedule->check_in_time);
-        $toleranceTime = $checkInTime->copy()->addMinutes($schedule->tolerance_minutes);
+        
+        // Get the scheduled check-in time as a string (H:i format)
+        $checkInTimeStr = $schedule->check_in_time instanceof Carbon 
+            ? $schedule->check_in_time->format('H:i:s')
+            : $schedule->check_in_time;
+        
+        // Create today's check-in time
+        $scheduledTime = Carbon::today()->setTimeFromTimeString($checkInTimeStr);
+        
+        // Add tolerance minutes to get the late threshold
+        $toleranceMinutes = $schedule->tolerance_minutes ?? 0;
+        $lateThreshold = $scheduledTime->copy()->addMinutes($toleranceMinutes);
 
-        // Set the date to today for comparison
-        $checkInTime->setDate($now->year, $now->month, $now->day);
-        $toleranceTime->setDate($now->year, $now->month, $now->day);
+        // Log for debugging
+        \Illuminate\Support\Facades\Log::info('Attendance status calculation', [
+            'current_time' => $now->format('H:i:s'),
+            'scheduled_time' => $scheduledTime->format('H:i:s'),
+            'tolerance_minutes' => $toleranceMinutes,
+            'late_threshold' => $lateThreshold->format('H:i:s'),
+            'is_on_time' => $now->lte($lateThreshold),
+        ]);
 
-        if ($now->lte($toleranceTime)) {
+        if ($now->lte($lateThreshold)) {
             return AttendanceStatus::ON_TIME;
         }
 
