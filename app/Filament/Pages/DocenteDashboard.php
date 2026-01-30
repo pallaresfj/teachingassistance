@@ -22,7 +22,7 @@ class DocenteDashboard extends Page
 
     public static function canAccess(): bool
     {
-        return Auth::check() && (Auth::user()->isDocente() || Auth::user()->isDirectivo());
+        return Auth::check() && Auth::user()->isDocente();
     }
 
     public function getTitle(): string | Htmlable

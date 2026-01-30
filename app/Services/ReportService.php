@@ -74,7 +74,7 @@ class ReportService
         // Filter users who didn't register
         return $usersWithSchedules->filter(function ($user) use ($usersWithAttendance) {
             return !in_array($user->id, $usersWithAttendance);
-        });
+        })->sortBy('name')->values();
     }
 
     /**

@@ -64,20 +64,20 @@ class DirectivoDashboard extends Page
     {
         return $schema
             ->components([
+                Section::make('Mi Asistencia')
+                    ->description('Registro y seguimiento de tu asistencia')
+                    ->icon('heroicon-o-user')
+                    ->schema([
+                        Grid::make($this->getColumns())
+                            ->schema(fn (): array => $this->getWidgetsSchemaComponents($this->getPersonalWidgets())),
+                    ]),
+                
                 Section::make('Estadísticas Globales')
                     ->description('Vista general de asistencias del período actual')
                     ->icon('heroicon-o-chart-bar')
                     ->schema([
                         Grid::make($this->getColumns())
                             ->schema(fn (): array => $this->getWidgetsSchemaComponents($this->getWidgets())),
-                    ]),
-                
-                Section::make('Mi Asistencia Personal')
-                    ->description('Registro y seguimiento de tu asistencia')
-                    ->icon('heroicon-o-user')
-                    ->schema([
-                        Grid::make($this->getColumns())
-                            ->schema(fn (): array => $this->getWidgetsSchemaComponents($this->getPersonalWidgets())),
                     ]),
             ]);
     }

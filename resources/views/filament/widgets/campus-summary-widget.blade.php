@@ -4,62 +4,66 @@
             🏫 Resumen por Sede
         </x-slot>
 
-        <div class="space-y-3">
-            @php
-                $summary = $this->getCampusSummary();
-            @endphp
+        @php
+            $summary = $this->getCampusSummary();
+        @endphp
 
-            @forelse($summary as $item)
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-gray-900 dark:text-white">
+        <div style="overflow-x: auto; padding: 0 0.5rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #6b7280;">
+                        <th style="padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            Sede
+                        </th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            Total
+                        </th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            A tiempo
+                        </th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            Retardos
+                        </th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            Puntualidad
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($summary as $item)
+                        <tr style="border-bottom: 1px solid rgba(107, 114, 128, 0.3);">
+                            <td style="padding: 0.75rem 1rem; font-weight: 500;">
                                 {{ $item->campus->name }}
-                            </h4>
-                            <div class="mt-2 grid grid-cols-4 gap-4 text-sm">
-                                <div>
-                                    <span class="text-gray-500 dark:text-gray-400">Total:</span>
-                                    <span class="ml-1 font-medium text-gray-900 dark:text-white">{{ $item->total }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 dark:text-gray-400">A Tiempo:</span>
-                                    <span class="ml-1 font-medium text-green-600 dark:text-green-400">{{ $item->on_time }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 dark:text-gray-400">Retardos:</span>
-                                    <span class="ml-1 font-medium text-yellow-600 dark:text-yellow-400">{{ $item->late }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 dark:text-gray-400">Puntualidad:</span>
-                                    <span class="ml-1 font-medium 
-                                        @if($item->punctuality >= 90) text-green-600 dark:text-green-400
-                                        @elseif($item->punctuality >= 75) text-yellow-600 dark:text-yellow-400
-                                        @else text-red-600 dark:text-red-400
-                                        @endif
-                                    ">
-                                        {{ $item->punctuality }}%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="ml-4">
-                            <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
-                                @if($item->punctuality >= 90) bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400
-                                @elseif($item->punctuality >= 75) bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400
-                                @else bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400
-                                @endif
-                            ">
-                                {{ number_format($item->punctuality, 0) }}%
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No hay datos de asistencias en el período seleccionado</p>
-                </div>
-            @endforelse
+                            </td>
+                            <td style="padding: 0.75rem 1rem; text-align: center;">
+                                {{ $item->total }}
+                            </td>
+                            <td style="padding: 0.75rem 1rem; text-align: center; color: #22c55e; font-weight: 500;">
+                                {{ $item->on_time }}
+                            </td>
+                            <td style="padding: 0.75rem 1rem; text-align: center; color: #eab308; font-weight: 500;">
+                                {{ $item->late }}
+                            </td>
+                            <td style="padding: 0.75rem 1rem; text-align: center;">
+                                <span style="display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;
+                                    @if($item->punctuality >= 90) background-color: rgba(34, 197, 94, 0.2); color: #22c55e;
+                                    @elseif($item->punctuality >= 75) background-color: rgba(234, 179, 8, 0.2); color: #eab308;
+                                    @else background-color: rgba(239, 68, 68, 0.2); color: #ef4444;
+                                    @endif
+                                ">
+                                    {{ $item->punctuality }}%
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" style="padding: 2rem 1rem; text-align: center; color: #6b7280;">
+                                No hay sedes activas registradas
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </x-filament::section>
 </x-filament-widgets::widget>

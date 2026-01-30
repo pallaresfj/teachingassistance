@@ -16,42 +16,39 @@ class UserSummaryTableWidget extends BaseWidget
     
     protected static ?int $sort = 5;
 
+    protected static ?string $heading = 'Resumen por Docente';
+
     public function table(Table $table): Table
     {
         return $table
             ->query($this->getTableQuery())
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Docente')
+                    ->label('DOCENTE')
                     ->searchable()
                     ->sortable(),
                 
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->toggleable(),
-                
                 Tables\Columns\TextColumn::make('attendances_count')
-                    ->label('Total')
+                    ->label('TOTAL')
                     ->alignCenter()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('on_time_count')
-                    ->label('A Tiempo')
+                    ->label('A TIEMPO')
                     ->alignCenter()
                     ->badge()
                     ->color('success')
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('late_count')
-                    ->label('Retardos')
+                    ->label('RETARDOS')
                     ->alignCenter()
                     ->badge()
                     ->color('warning')
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('punctuality')
-                    ->label('Puntualidad')
+                    ->label('PUNTUALIDAD')
                     ->alignCenter()
                     ->getStateUsing(function ($record) {
                         if ($record->attendances_count == 0) {
@@ -67,7 +64,7 @@ class UserSummaryTableWidget extends BaseWidget
                         default => 'danger',
                     }),
             ])
-            ->defaultSort('attendances_count', 'desc');
+            ->defaultSort('name', 'asc');
     }
 
     protected function getTableQuery(): Builder

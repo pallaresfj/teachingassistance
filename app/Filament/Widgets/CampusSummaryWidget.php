@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Attendance;
+use App\Models\Campus;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,24 +19,45 @@ class CampusSummaryWidget extends Widget
 
     public function getCampusSummary()
     {
-        $query = Attendance::query();
+        $startDate = $this->startDate && $this->endDate 
+            ? $this->startDate 
+            : now()->startOfMonth();
+        $endDate = $this->startDate && $this->endDate 
+            ? $this->endDate 
+            : now()->endOfMonth();
 
-        if ($this->startDate && $this->endDate) {
-            $query->whereBetween('check_in_time', [$this->startDate, $this->endDate]);
-        } else {
-            $query->whereBetween('check_in_time', [now()->startOfMonth(), now()->endOfMonth()]);
-        }
-
-        return $query->select(
-            'campus_id',
-            DB::raw('COUNT(*) as total'),
-            DB::raw("SUM(CASE WHEN status = 'on_time' THEN 1 ELSE 0 END) as on_time"),
-            DB::raw("SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late"),
-            DB::raw("ROUND((SUM(CASE WHEN status = 'on_time' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) as punctuality")
-        )
-            ->with('campus')
+        // Get attendance stats grouped by campus
+        $attendanceStats = Attendance::query()
+            ->whereBetween('check_in_time', [$startDate, $endDate])
+            ->select(
+                'campus_id',
+                DB::raw('COUNT(*) as total'),
+                DB::raw("SUM(CASE WHEN status = 'on_time' THEN 1 ELSE 0 END) as on_time"),
+                DB::raw("SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late")
+            )
             ->groupBy('campus_id')
-            ->get();
+            ->get()
+            ->keyBy('campus_id');
+
+        // Get all active campuses and merge with stats
+        return Campus::where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($campus) use ($attendanceStats) {
+                $stats = $attendanceStats->get($campus->id);
+                $total = $stats?->total ?? 0;
+                $onTime = $stats?->on_time ?? 0;
+                $late = $stats?->late ?? 0;
+                $punctuality = $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
+
+                return (object) [
+                    'campus' => $campus,
+                    'total' => $total,
+                    'on_time' => $onTime,
+                    'late' => $late,
+                    'punctuality' => $punctuality,
+                ];
+            });
     }
 
     public static function canView(): bool
