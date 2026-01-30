@@ -64,6 +64,7 @@ class AttendanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('user.name')
                     ->label('Docente')

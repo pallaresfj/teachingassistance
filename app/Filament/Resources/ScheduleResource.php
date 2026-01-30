@@ -106,6 +106,7 @@ class ScheduleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('user.name')
                     ->label('Docente')
@@ -141,6 +142,15 @@ class ScheduleResource extends Resource
                     ->boolean(),
             ])
             ->filters([
+                SelectFilter::make('user_id')
+                    ->label('Docente')
+                    ->options(
+                        User::whereIn('role', ['docente', 'directivo'])
+                            ->pluck('name', 'id')
+                    )
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('campus_id')
                     ->label('Sede')
                     ->options(Campus::pluck('name', 'id')),
