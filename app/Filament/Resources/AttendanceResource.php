@@ -67,33 +67,33 @@ class AttendanceResource extends Resource
             ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('user.name')
-                    ->label('Docente')
+                    ->label('DOCENTE')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('campus.name')
-                    ->label('Sede')
+                    ->label('SEDE')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('check_in_time')
-                    ->label('Entrada')
+                    ->label('ENTRADA')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
                 TextColumn::make('check_out_time')
-                    ->label('Salida')
+                    ->label('SALIDA')
                     ->time('H:i')
                     ->placeholder('-'),
 
                 TextColumn::make('status')
-                    ->label('Estado')
+                    ->label('ESTADO')
                     ->badge()
                     ->formatStateUsing(fn($state) => $state?->label())
                     ->color(fn($state) => $state?->color()),
 
                 TextColumn::make('distance_from_campus')
-                    ->label('Distancia')
+                    ->label('DISTANCIA')
                     ->suffix(' m')
                     ->toggleable(),
             ])
