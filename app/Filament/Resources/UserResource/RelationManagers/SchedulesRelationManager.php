@@ -156,31 +156,31 @@ class SchedulesRelationManager extends RelationManager
             ->recordTitleAttribute('day_name')
             ->columns([
                 TextColumn::make('campus.name')
-                    ->label('Sede')
+                    ->label('SEDE')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('day_name')
-                    ->label('Día')
+                    ->label('DÍA')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('check_in_time')
-                    ->label('Entrada')
+                    ->label('ENTRADA')
                     ->time('H:i')
                     ->sortable(),
 
                 TextColumn::make('check_out_time')
-                    ->label('Salida')
+                    ->label('SALIDA')
                     ->time('H:i'),
 
                 TextColumn::make('tolerance_minutes')
-                    ->label('Tolerancia')
+                    ->label('TOLERANCIA')
                     ->suffix(' min')
                     ->toggleable(),
 
                 IconColumn::make('is_active')
-                    ->label('Activo')
+                    ->label('ACTIVO')
                     ->boolean(),
             ])
             ->filters([

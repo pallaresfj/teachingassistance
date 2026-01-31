@@ -46,45 +46,49 @@ class UserResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Información Personal')
+                Section::make('Datos del Usuario')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nombre completo')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpan(2),
 
                         TextInput::make('email')
                             ->label('Correo electrónico')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->maxLength(255),
-
-                        TextInput::make('phone')
-                            ->label('Teléfono')
-                            ->tel()
-                            ->maxLength(20),
+                            ->maxLength(255)
+                            ->columnSpan(2),
 
                         TextInput::make('identification_number')
                             ->label('Número de Identificación')
                             ->maxLength(20)
-                            ->unique(ignoreRecord: true),
-                    ])
-                    ->columns(2),
+                            ->unique(ignoreRecord: true)
+                            ->columnSpan(1),
 
-                Section::make('Rol y Estado')
-                    ->schema([
+                        TextInput::make('phone')
+                            ->label('Teléfono')
+                            ->tel()
+                            ->maxLength(20)
+                            ->columnSpan(1),
+
                         Select::make('role')
                             ->label('Rol')
                             ->options(UserRole::options())
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->columnSpan(1),
 
                         Toggle::make('is_active')
                             ->label('Usuario Activo')
-                            ->default(true),
+                            ->default(true)
+                            ->inline(false)
+                            ->columnSpan(1),
                     ])
-                    ->columns(2),
+                    ->columns(4)
+                    ->columnSpanFull(),
             ]);
     }
 
