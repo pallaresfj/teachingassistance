@@ -39,48 +39,63 @@ class SchedulesRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Section::make('Asignación')
+                Section::make('Datos del Horario')
                     ->schema([
                         Select::make('campus_id')
                             ->label('Sede')
                             ->options(Campus::where('is_active', true)->pluck('name', 'id'))
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->columnSpan(1),
+
+                        Select::make('days_of_week')
+                            ->label('Días de la Semana')
+                            ->options(Schedule::DAYS)
+                            ->required()
+                            ->multiple(fn($context) => $context === 'create')
+                            ->native(false)
+                            ->columnSpan(1)
+                            ->helperText('Seleccione uno o más días para crear el horario')
+                            ->visible(fn($context) => $context === 'create'),
 
                         Select::make('day_of_week')
                             ->label('Día de la Semana')
                             ->options(Schedule::DAYS)
                             ->required()
-                            ->native(false),
-                    ])
-                    ->columns(2),
-
-                Section::make('Horario')
-                    ->schema([
-                        TimePicker::make('check_in_time')
-                            ->label('Hora de Entrada')
-                            ->required()
-                            ->seconds(false),
-
-                        TimePicker::make('check_out_time')
-                            ->label('Hora de Salida')
-                            ->seconds(false),
+                            ->native(false)
+                            ->columnSpan(1)
+                            ->visible(fn($context) => $context === 'edit'),
 
                         TextInput::make('tolerance_minutes')
                             ->label('Tolerancia')
                             ->required()
                             ->numeric()
-                            ->default(15)
+                            ->default(5)
                             ->minValue(0)
                             ->maxValue(60)
-                            ->suffix('minutos'),
+                            ->suffix('minutos')
+                            ->columnSpan(1),
+
+                        TimePicker::make('check_in_time')
+                            ->label('Hora de Entrada')
+                            ->required()
+                            ->seconds(false)
+                            ->columnSpan(1),
+
+                        TimePicker::make('check_out_time')
+                            ->label('Hora de Salida')
+                            ->seconds(false)
+                            ->columnSpan(1),
 
                         Toggle::make('is_active')
                             ->label('Horario Activo')
-                            ->default(true),
+                            ->default(true)
+                            ->inline(false)
+                            ->columnSpan(1),
                     ])
-                    ->columns(2),
+                    ->columns(3)
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -202,15 +217,68 @@ class SchedulesRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('Agregar Horario')
+                    ->createAnother(false)
+                    ->mutateFormDataUsing(function (array $data): array {
+                        // Guardar los días seleccionados para usar después
+                        $data['_selected_days'] = $data['days_of_week'] ?? [];
+                        // Establecer el primer día para la validación inicial
+                        $data['day_of_week'] = is_array($data['days_of_week']) ? $data['days_of_week'][0] : $data['days_of_week'];
+                        unset($data['days_of_week']);
+                        return $data;
+                    })
                     ->before(function (CreateAction $action, array $data) {
-                        $error = $this->validateNoOverlap($data);
-                        if ($error) {
-                            Notification::make()
-                                ->title('Error de validación')
-                                ->body($error)
-                                ->danger()
-                                ->send();
-                            $action->halt();
+                        // Validar que no haya solapamientos en ninguno de los días seleccionados
+                        $selectedDays = $data['_selected_days'] ?? [$data['day_of_week']];
+                        
+                        foreach ($selectedDays as $day) {
+                            $testData = $data;
+                            $testData['day_of_week'] = $day;
+                            $error = $this->validateNoOverlap($testData);
+                            if ($error) {
+                                Notification::make()
+                                    ->title('Error de validación')
+                                    ->body($error)
+                                    ->danger()
+                                    ->send();
+                                $action->halt();
+                                return;
+                            }
+                        }
+                    })
+                    ->after(function (CreateAction $action, array $data, $record) {
+                        // Crear horarios adicionales para los demás días seleccionados
+                        $selectedDays = $data['_selected_days'] ?? [];
+                        
+                        if (count($selectedDays) > 1) {
+                            $userId = $this->getOwnerRecord()->id;
+                            $createdCount = 0;
+                            
+                            foreach ($selectedDays as $day) {
+                                // Saltar el primer día ya que ya fue creado
+                                if ($day == $record->day_of_week) {
+                                    continue;
+                                }
+                                
+                                Schedule::create([
+                                    'user_id' => $userId,
+                                    'campus_id' => $data['campus_id'],
+                                    'day_of_week' => $day,
+                                    'check_in_time' => $data['check_in_time'],
+                                    'check_out_time' => $data['check_out_time'],
+                                    'tolerance_minutes' => $data['tolerance_minutes'],
+                                    'is_active' => $data['is_active'] ?? true,
+                                ]);
+                                
+                                $createdCount++;
+                            }
+                            
+                            if ($createdCount > 0) {
+                                Notification::make()
+                                    ->title('Horarios creados')
+                                    ->body("Se crearon " . ($createdCount + 1) . " horarios exitosamente.")
+                                    ->success()
+                                    ->send();
+                            }
                         }
                     }),
             ])

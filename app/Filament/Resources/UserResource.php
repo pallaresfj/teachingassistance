@@ -131,7 +131,8 @@ class UserResource extends Resource
             ->filters([
                 SelectFilter::make('role')
                     ->label('Rol')
-                    ->options(UserRole::options()),
+                    ->options(UserRole::options())
+                    ->native(false),
 
                 TernaryFilter::make('is_active')
                     ->label('Estado')
