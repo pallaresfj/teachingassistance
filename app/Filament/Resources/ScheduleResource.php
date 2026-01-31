@@ -38,6 +38,8 @@ class ScheduleResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Administración';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function canAccess(): bool
     {
         return Auth::check() && Auth::user()->isSoporte();

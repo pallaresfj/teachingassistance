@@ -45,28 +45,33 @@ class CampusResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Información de la Sede')
+                Section::make('Datos de la Sede')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpan(1),
 
                         TextInput::make('address')
                             ->label('Dirección')
                             ->maxLength(500)
-                            ->columnSpanFull(),
-                    ]),
+                            ->columnSpan(1),
 
-                Section::make('Ubicación GPS')
-                    ->schema([
+                        Toggle::make('is_active')
+                            ->label('Sede Activa')
+                            ->default(true)
+                            ->inline(false)
+                            ->columnSpan(1),
+
                         TextInput::make('latitude')
                             ->label('Latitud')
                             ->required()
                             ->numeric()
                             ->step(0.0000001)
                             ->minValue(-90)
-                            ->maxValue(90),
+                            ->maxValue(90)
+                            ->columnSpan(1),
 
                         TextInput::make('longitude')
                             ->label('Longitud')
@@ -74,25 +79,21 @@ class CampusResource extends Resource
                             ->numeric()
                             ->step(0.0000001)
                             ->minValue(-180)
-                            ->maxValue(180),
+                            ->maxValue(180)
+                            ->columnSpan(1),
 
                         TextInput::make('radius_meters')
                             ->label('Radio permitido')
                             ->required()
                             ->numeric()
-                            ->default(100)
+                            ->default(20)
                             ->minValue(10)
                             ->maxValue(1000)
-                            ->suffix('metros'),
+                            ->suffix('metros')
+                            ->columnSpan(1),
                     ])
-                    ->columns(3),
-
-                Section::make('Estado')
-                    ->schema([
-                        Toggle::make('is_active')
-                            ->label('Sede Activa')
-                            ->default(true),
-                    ]),
+                    ->columns(3)
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -102,31 +103,31 @@ class CampusResource extends Resource
             ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label('NOMBRE')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('address')
-                    ->label('Dirección')
+                    ->label('DIRECCIÓN')
                     ->limit(30)
                     ->searchable(),
 
                 TextColumn::make('latitude')
-                    ->label('Latitud')
+                    ->label('LATITUD')
                     ->numeric(7)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('longitude')
-                    ->label('Longitud')
+                    ->label('LONGITUD')
                     ->numeric(7)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('radius_meters')
-                    ->label('Radio')
+                    ->label('RADIO')
                     ->suffix(' m'),
 
                 IconColumn::make('is_active')
-                    ->label('Activo')
+                    ->label('ACTIVO')
                     ->boolean(),
             ])
             ->filters([
