@@ -94,32 +94,32 @@ class UserResource extends Resource
             ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label('NOMBRE')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('email')
-                    ->label('Correo')
+                    ->label('CORREO')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('phone')
-                    ->label('Teléfono')
+                    ->label('TELÉFONO')
                     ->searchable()
                     ->toggleable(),
 
                 TextColumn::make('role')
-                    ->label('Rol')
+                    ->label('ROL')
                     ->badge()
                     ->formatStateUsing(fn($state) => $state?->label())
                     ->color(fn($state) => $state?->color()),
 
                 IconColumn::make('is_active')
-                    ->label('Activo')
+                    ->label('ACTIVO')
                     ->boolean(),
 
                 TextColumn::make('created_at')
-                    ->label('Creado')
+                    ->label('CREADO')
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
