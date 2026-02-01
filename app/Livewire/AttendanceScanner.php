@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Campus;
 use App\Services\AttendanceService;
 use App\Services\GeolocationService;
 use App\Services\QRGeneratorService;

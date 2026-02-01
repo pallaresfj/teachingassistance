@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('campus_id')->constrained()->onDelete('cascade');
             $table->foreignId('schedule_id')->nullable()->constrained()->onDelete('set null');
+            $table->date('date')->nullable();
             $table->dateTime('check_in_time');
             $table->dateTime('check_out_time')->nullable();
             $table->decimal('latitude', 10, 8);
@@ -22,8 +23,7 @@ return new class extends Migration {
             $table->decimal('distance_from_campus', 8, 2)->nullable();
             $table->enum('status', ['on_time', 'late', 'absent', 'justified'])->default('on_time');
             $table->text('notes')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
+            $table->json('device_info')->nullable();
             $table->timestamps();
 
             // Indexes for common queries
