@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login as FilamentLogin;
 use App\Filament\Pages\DirectivoDashboard;
 use App\Filament\Pages\DocenteDashboard;
 use Filament\Http\Middleware\Authenticate;
@@ -31,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('app')
-            ->login()
+            ->login(FilamentLogin::class)
             ->profile()
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->colors([

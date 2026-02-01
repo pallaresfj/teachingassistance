@@ -1,17 +1,26 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use App\Livewire\ProfileEdit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Authentication routes for docentes and directivos
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Authentication routes redirect to Filament login
+Route::get('/login', function () {
+    return redirect('/app/login');
+})->name('login');
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/');
+})->name('logout');
 
 // Dashboard redirect based on role
 Route::middleware(['auth'])->group(function () {
