@@ -104,8 +104,7 @@ class CampusResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->label('NOMBRE')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
 
                 TextColumn::make('address')
                     ->label('DIRECCIÓN')
@@ -213,6 +212,7 @@ class CampusResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ])
+            ->defaultSort('name')
             ->bulkActions([
                 \Filament\Actions\DeleteBulkAction::make(),
             ]);

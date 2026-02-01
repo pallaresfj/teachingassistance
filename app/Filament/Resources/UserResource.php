@@ -99,13 +99,11 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->label('NOMBRE')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
 
                 TextColumn::make('email')
                     ->label('CORREO')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
 
                 TextColumn::make('phone')
                     ->label('TELÉFONO')
@@ -125,7 +123,6 @@ class UserResource extends Resource
                 TextColumn::make('created_at')
                     ->label('CREADO')
                     ->dateTime('d/m/Y')
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -145,6 +142,7 @@ class UserResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ])
+            ->defaultSort('name')
             ->bulkActions([
                 \Filament\Actions\DeleteBulkAction::make(),
             ]);
