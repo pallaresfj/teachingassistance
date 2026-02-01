@@ -259,7 +259,7 @@
 
                 <div class="remember-forgot">
                     <label class="remember-label">
-                        <input type="checkbox" name="remember">
+                        <input type="checkbox" name="remember" checked>
                         <span>Recordarme</span>
                     </label>
                 </div>
