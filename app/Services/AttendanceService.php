@@ -6,6 +6,7 @@ use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
 use App\Models\Schedule;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -86,12 +87,52 @@ class AttendanceService
     public function getTodaySchedule(User $user, Campus $campus): ?Schedule
     {
         $dayOfWeek = now()->dayOfWeek;
-
-        return Schedule::where('user_id', $user->id)
-            ->where('campus_id', $campus->id)
+        $query = Schedule::where('user_id', $user->id)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_active', true)
-            ->first();
+            ->orderBy('check_in_time');
+
+        if (!$user->isDirectivo()) {
+            $query->where('campus_id', $campus->id);
+        }
+
+        $schedules = $query->get();
+        if ($schedules->isEmpty()) {
+            return null;
+        }
+
+        $now = now();
+        $earlyCheckInMinutes = (int) Setting::getValue(
+            'attendance.early_check_in_minutes',
+            config('attendance.early_check_in_minutes', 30)
+        );
+        foreach ($schedules as $schedule) {
+            $checkInTimeStr = $schedule->check_in_time instanceof Carbon
+                ? $schedule->check_in_time->format('H:i:s')
+                : $schedule->check_in_time;
+            $checkOutTimeStr = $schedule->check_out_time instanceof Carbon
+                ? $schedule->check_out_time->format('H:i:s')
+                : $schedule->check_out_time;
+
+            if (!$checkInTimeStr) {
+                continue;
+            }
+
+            $checkInTime = Carbon::today()->setTimeFromTimeString($checkInTimeStr);
+            $earlyCheckIn = $checkInTime->copy()->subMinutes($earlyCheckInMinutes);
+            if ($checkOutTimeStr) {
+                $checkOutTime = Carbon::today()->setTimeFromTimeString($checkOutTimeStr);
+                if ($now->between($earlyCheckIn, $checkOutTime)) {
+                    return $schedule;
+                }
+            } else {
+                if ($now->gte($earlyCheckIn)) {
+                    return $schedule;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -146,10 +187,14 @@ class AttendanceService
      */
     public function hasRegisteredToday(User $user, Campus $campus): bool
     {
-        return Attendance::where('user_id', $user->id)
-            ->where('campus_id', $campus->id)
-            ->whereDate('check_in_time', today())
-            ->exists();
+        $query = Attendance::where('user_id', $user->id)
+            ->whereDate('check_in_time', today());
+
+        if (!$user->isDirectivo()) {
+            $query->where('campus_id', $campus->id);
+        }
+
+        return $query->exists();
     }
 
     /**

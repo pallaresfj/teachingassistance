@@ -94,7 +94,11 @@ class AttendanceScanner extends Component
 
         if (!$todaySchedule) {
             $dayName = now()->locale('es')->isoFormat('dddd');
-            $this->errorMessage = "No tiene horario asignado en la sede '{$campus->name}' para el día {$dayName}. Verifique que esté escaneando el código QR de la sede correcta.";
+            if (auth()->user()->isDirectivo()) {
+                $this->errorMessage = "No tiene horario asignado para el día {$dayName}.";
+            } else {
+                $this->errorMessage = "No tiene horario asignado en la sede '{$campus->name}' para el día {$dayName}. Verifique que esté escaneando el código QR de la sede correcta.";
+            }
             $this->scanning = true;
             return;
         }
@@ -126,7 +130,9 @@ class AttendanceScanner extends Component
         // Check if already registered today
         if ($attendanceService->hasRegisteredToday(auth()->user(), $campus)) {
             $this->alreadyRegistered = true;
-            $this->infoMessage = 'Ya ha registrado su asistencia hoy en esta sede.';
+            $this->infoMessage = auth()->user()->isDirectivo()
+                ? 'Ya ha registrado su asistencia hoy.'
+                : 'Ya ha registrado su asistencia hoy en esta sede.';
             $this->closeScanner();
             return;
         }
