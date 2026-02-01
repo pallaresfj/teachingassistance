@@ -22,6 +22,7 @@ class AttendanceScanner extends Component
     public string $infoMessage = '';
     public bool $registrationSuccess = false;
     public bool $alreadyRegistered = false;
+    public ?string $lastStatus = null;
 
     protected $listeners = [
         'locationReceived',
@@ -31,7 +32,7 @@ class AttendanceScanner extends Component
 
     public function openScanner(): void
     {
-        $this->reset(['errorMessage', 'infoMessage', 'scanStatus', 'registrationSuccess', 'alreadyRegistered']);
+        $this->reset(['errorMessage', 'infoMessage', 'scanStatus', 'registrationSuccess', 'alreadyRegistered', 'lastStatus']);
         $this->showScanner = true;
         $this->scanning = true;
         $this->locationStatus = 'Obteniendo ubicación...';
@@ -143,6 +144,7 @@ class AttendanceScanner extends Component
             );
 
             $this->registrationSuccess = true;
+            $this->lastStatus = $attendance->status->value;
             $this->scanStatus = "¡Asistencia registrada! Estado: {$attendance->status->label()}";
             $this->closeScanner();
 

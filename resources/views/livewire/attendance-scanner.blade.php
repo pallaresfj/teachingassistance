@@ -26,14 +26,30 @@
 
     {{-- Success Message --}}
     @if($registrationSuccess)
-        <div style="padding: 1rem 1.25rem; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
-            <svg style="width: 1.25rem; height: 1.25rem; flex-shrink: 0; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        @php
+            $isLate = $lastStatus === 'late';
+            $successBg = $isLate ? '#fffbeb' : '#f0fdf4';
+            $successBorder = $isLate ? '#fde68a' : '#bbf7d0';
+            $successText = $isLate ? '#b45309' : '#15803d';
+            $successSubtext = $isLate ? '#d97706' : '#16a34a';
+            $successIcon = $isLate ? '#d97706' : '#16a34a';
+            $successSecondaryText = $isLate
+                ? 'Su asistencia ha sido registrada con retardo.'
+                : 'Su asistencia ha sido registrada correctamente.';
+        @endphp
+        <div style="padding: 1rem 1.25rem; background-color: {{ $successBg }}; border: 1px solid {{ $successBorder }}; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
+            <svg style="width: 1.25rem; height: 1.25rem; flex-shrink: 0; color: {{ $successIcon }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                @if($isLate)
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+                @else
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                @endif
             </svg>
             <div style="flex: 1; min-width: 0;">
-                <p style="font-weight: 600; color: #15803d; font-size: 0.9375rem; margin: 0;">{{ $scanStatus }}</p>
-                <p style="color: #16a34a; font-size: 0.8125rem; margin: 0.125rem 0 0 0;">Su asistencia ha sido registrada correctamente.</p>
+                <p style="font-weight: 600; color: {{ $successText }}; font-size: 0.9375rem; margin: 0;">{{ $scanStatus }}</p>
+                <p style="color: {{ $successSubtext }}; font-size: 0.8125rem; margin: 0.125rem 0 0 0;">{{ $successSecondaryText }}</p>
             </div>
         </div>
     @endif
