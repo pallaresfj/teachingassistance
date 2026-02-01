@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->enum('role', ['soporte', 'directivo', 'docente'])->default('docente')->after('password');
             $table->string('phone', 20)->nullable()->after('role');
             $table->string('identification_number', 30)->nullable()->after('phone');
+            $table->string('avatar_path', 255)->nullable()->after('identification_number');
             $table->boolean('is_active')->default(true)->after('identification_number');
 
             // Index for role-based queries
@@ -30,7 +31,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->dropIndex(['role']);
             $table->dropIndex(['is_active']);
-            $table->dropColumn(['role', 'phone', 'identification_number', 'is_active']);
+            $table->dropColumn(['role', 'phone', 'identification_number', 'avatar_path', 'is_active']);
         });
     }
 };

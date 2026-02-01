@@ -1,6 +1,5 @@
 <?php
 
-use App\Livewire\ProfileEdit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -38,8 +37,10 @@ Route::middleware(['auth'])->group(function () {
         return redirect('/app/docente-dashboard');
     })->name('dashboard');
 
-    // Profile route for docente and directivo
-    Route::get('/profile', ProfileEdit::class)->name('profile.edit');
+    // Redirect classic profile route to Filament profile
+    Route::get('/profile', function () {
+        return redirect('/app/profile');
+    })->name('profile.edit');
 });
 
 // Docente routes - Redirect to Filament panel

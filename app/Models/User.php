@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -28,6 +29,7 @@ class User extends Authenticatable implements FilamentUser
         'phone',
         'identification_number',
         'is_active',
+        'avatar_path',
     ];
 
     /**
@@ -133,5 +135,10 @@ class User extends Authenticatable implements FilamentUser
     public function getRoleLabelAttribute(): string
     {
         return $this->role?->label() ?? 'Sin rol';
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_path ? \Storage::disk('public')->url($this->avatar_path) : null;
     }
 }

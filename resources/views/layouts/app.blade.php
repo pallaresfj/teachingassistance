@@ -27,6 +27,48 @@
             min-height: 100vh;
         }
 
+        .theme-dark body {
+            background: #0f172a;
+        }
+
+        .theme-dark .bg-white {
+            background-color: #0b1220 !important;
+        }
+
+        .theme-dark .bg-gray-50 {
+            background-color: #0f172a !important;
+        }
+
+        .theme-dark .bg-gray-100 {
+            background-color: #111827 !important;
+        }
+
+        .theme-dark .bg-gray-200 {
+            background-color: #1f2937 !important;
+        }
+
+        .theme-dark .text-gray-900 {
+            color: #f9fafb !important;
+        }
+
+        .theme-dark .text-gray-700 {
+            color: #e5e7eb !important;
+        }
+
+        .theme-dark .text-gray-600,
+        .theme-dark .text-gray-500 {
+            color: #cbd5e1 !important;
+        }
+
+        .theme-dark .border-gray-200,
+        .theme-dark .border-gray-300 {
+            border-color: #334155 !important;
+        }
+
+        .theme-dark .shadow-sm {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+        }
+
         .app-container {
             min-height: 100vh;
         }
@@ -443,7 +485,9 @@
 </head>
 
 <body>
-    <div x-data="{ sidebarOpen: false }" class="min-h-screen bg-gray-50">
+    <div x-data="{ sidebarOpen: false, darkTheme: false }"
+        x-init="darkTheme = localStorage.getItem('theme') === 'dark'; document.documentElement.classList.toggle('theme-dark', darkTheme); $watch('darkTheme', value => { document.documentElement.classList.toggle('theme-dark', value); localStorage.setItem('theme', value ? 'dark' : 'light'); })"
+        class="min-h-screen bg-gray-50">
 
         <!-- Top Navigation Bar -->
         <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 h-16">
@@ -485,29 +529,45 @@
                                 </button>
 
                                 @auth
-                                    <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
-                                        <div class="text-right hidden md:block">
-                                            <p class="text-sm font-semibold text-gray-900 leading-none">
-                                                {{ auth()->user()->name }}
-                                            </p>
-                                            <p class="text-xs text-gray-500 mt-1 capitalize">
-                                                {{ auth()->user()->role->label() }}
-                                            </p>
-                                        </div>
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0D8ABC&color=fff"
-                                                alt="Avatar">
-                                        </div>
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="text-gray-400 hover:text-red-500" title="Sign Out">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                                </svg>
+                                    <div class="relative pl-4 border-l border-gray-200" x-data="{ userMenuOpen: false }">
+                                        <button type="button" @click="userMenuOpen = !userMenuOpen" @click.outside="userMenuOpen = false"
+                                            class="flex items-center gap-3 text-left">
+                                            <div class="text-right hidden md:block">
+                                                <p class="text-sm font-semibold text-gray-900 leading-none">
+                                                    {{ auth()->user()->name }}
+                                                </p>
+                                                <p class="text-xs text-gray-500 mt-1 capitalize">
+                                                    {{ auth()->user()->role->label() }}
+                                                </p>
+                                            </div>
+                                            <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
+                                                <img src="{{ auth()->user()->avatar_path ? Storage::url(auth()->user()->avatar_path) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0D8ABC&color=fff' }}"
+                                                    alt="Avatar" class="w-full h-full object-cover">
+                                            </div>
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        <div x-show="userMenuOpen" x-transition
+                                            class="absolute right-0 mt-3 w-48 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                                            <a href="{{ route('profile.edit') }}"
+                                                class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <span>Perfil</span>
+                                            </a>
+                                            <button type="button" @click="darkTheme = !darkTheme"
+                                                class="flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <span>Tema</span>
+                                                <span class="text-xs text-gray-500" x-text="darkTheme ? 'Oscuro' : 'Claro'"></span>
                                             </button>
-                                        </form>
+                                            <form method="POST" action="{{ route('logout') }}">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="flex items-center justify-between w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                    <span>Salir</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 @endauth
                             </div>

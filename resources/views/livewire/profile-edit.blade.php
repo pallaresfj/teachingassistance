@@ -17,6 +17,28 @@
 
         <form wire:submit="updateProfile" class="space-y-4">
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fotografía</label>
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-full overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
+                        @if ($photo)
+                            <img src="{{ $photo->temporaryUrl() }}" alt="Vista previa" class="w-full h-full object-cover">
+                        @elseif(auth()->user()->avatar_path)
+                            <img src="{{ Storage::url(auth()->user()->avatar_path) }}" alt="Avatar" class="w-full h-full object-cover">
+                        @else
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0D8ABC&color=fff"
+                                alt="Avatar" class="w-full h-full object-cover">
+                        @endif
+                    </div>
+                    <div class="flex-1">
+                        <input type="file" wire:model="photo" accept="image/*"
+                            class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        <p class="text-xs text-gray-500 mt-1">PNG, JPG o WebP. Máximo 2 MB.</p>
+                        @error('photo') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                 <input type="text" wire:model="name"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
@@ -84,11 +106,11 @@
 
     {{-- Back Button --}}
     <div>
-        <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900">
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Volver al Dashboard
+            Cancelar
         </a>
     </div>
 </div>
