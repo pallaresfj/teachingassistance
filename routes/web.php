@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -42,6 +43,20 @@ Route::middleware(['auth'])->group(function () {
         return redirect('/app/profile');
     })->name('profile.edit');
 });
+
+Route::get('/media/{path}', function (string $path) {
+    if (str_contains($path, '..')) {
+        abort(404);
+    }
+
+    $disk = Storage::disk('public');
+
+    if (! $disk->exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($disk->path($path));
+})->where('path', '.*')->name('media.public');
 
 // Docente routes - Redirect to Filament panel
 Route::middleware(['auth', 'role:docente,directivo'])->prefix('docente')->name('docente.')->group(function () {

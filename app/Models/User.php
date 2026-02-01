@@ -139,6 +139,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatar_path ? \Storage::disk('public')->url($this->avatar_path) : null;
+        return $this->avatar_path ? route('media.public', ['path' => $this->avatar_path]) : null;
     }
 }

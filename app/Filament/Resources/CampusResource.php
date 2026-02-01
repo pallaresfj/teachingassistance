@@ -155,7 +155,7 @@ class CampusResource extends Resource
                             $record->refresh();
                         }
                         
-                        $qrUrl = $disk->url($record->qr_code_path);
+                        $qrUrl = route('media.public', ['path' => $record->qr_code_path]);
                         
                         return view('filament.modals.campus-qr', [
                             'campus' => $record,
