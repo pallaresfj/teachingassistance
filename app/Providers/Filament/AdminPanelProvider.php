@@ -8,6 +8,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Enums\UserMenuPosition;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -32,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('app')
             ->login()
             ->profile()
+            ->userMenu(position: UserMenuPosition::Sidebar)
             ->colors([
                 'primary' => '#1d6362',
                 'success' => '#6b9a34',
