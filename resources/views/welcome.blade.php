@@ -49,13 +49,19 @@
             --gray-700: #374151;
             --gray-800: #1f2937;
             --gray-900: #111827;
+            --surface: #ffffff;
+            --bg: linear-gradient(135deg, #e6f2f2 0%, #fff 50%, var(--gray-50) 100%);
+            --text: var(--gray-800);
+            --muted: var(--gray-600);
+            --border: rgba(0, 0, 0, 0.05);
+            --card-border: rgba(0, 0, 0, 0.05);
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #e6f2f2 0%, #fff 50%, var(--gray-50) 100%);
+            background: var(--bg);
             min-height: 100vh;
-            color: var(--gray-800);
+            color: var(--text);
             line-height: 1.6;
         }
 
@@ -67,7 +73,7 @@
             right: 0;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border);
             z-index: 100;
             padding: 1rem 2rem;
         }
@@ -199,9 +205,32 @@
 
         .hero p {
             font-size: 1.25rem;
-            color: var(--gray-600);
+            color: var(--muted);
             max-width: 600px;
             margin: 0 auto 3rem;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 600px;
+            padding: 0.95rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            box-shadow: 0 10px 24px -12px rgba(29, 99, 98, 0.6);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px -14px rgba(29, 99, 98, 0.7);
         }
 
         /* Access Cards Section */
@@ -229,11 +258,11 @@
         }
 
         .access-card {
-            background: white;
+            background: var(--surface);
             border-radius: 20px;
             padding: 2rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 40px -10px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--card-border);
             transition: all 0.3s ease;
             text-decoration: none;
             display: block;
@@ -357,6 +386,88 @@
             border-top: 1px solid var(--gray-200);
         }
 
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --surface: #0f172a;
+                --bg: linear-gradient(135deg, #0b1020 0%, #0f172a 60%, #111827 100%);
+                --text: #e5e7eb;
+                --muted: #cbd5f5;
+                --border: rgba(255, 255, 255, 0.08);
+                --card-border: rgba(255, 255, 255, 0.08);
+            }
+
+            body {
+                color: var(--text);
+            }
+
+            .header {
+                background: rgba(15, 23, 42, 0.85);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .logo {
+                color: #e2e8f0;
+            }
+
+            .nav-link-ghost {
+                color: #cbd5f5;
+            }
+
+            .nav-link-ghost:hover {
+                color: #f8fafc;
+                background: rgba(148, 163, 184, 0.12);
+            }
+
+            .nav-link-primary {
+                background: #e2e8f0;
+                color: #0f172a;
+            }
+
+            .nav-link-primary:hover {
+                background: #f8fafc;
+            }
+
+            .hero h1 {
+                background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero h1 span {
+                background: linear-gradient(135deg, #7dd3fc 0%, #22d3ee 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero-badge {
+                background: rgba(148, 163, 184, 0.15);
+                color: #e2e8f0;
+            }
+
+            .features {
+                background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.7));
+            }
+
+            .feature h3 {
+                color: #e2e8f0;
+            }
+
+            .feature p {
+                color: #cbd5f5;
+            }
+
+            .footer {
+                color: #94a3b8;
+                border-top: 1px solid var(--border);
+            }
+
+            .footer a {
+                color: #67e8f9;
+            }
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .header {
@@ -373,6 +484,11 @@
 
             .hero p {
                 font-size: 1.1rem;
+            }
+
+            .hero-cta {
+                width: 100%;
+                max-width: none;
             }
 
             .access-section {
@@ -424,6 +540,7 @@
         <p>
             Plataforma PWA para el registro de asistencia docente mediante códigos QR y validación por geolocalización.
         </p>
+        <a class="hero-cta" href="/app/login">Iniciar Sesión</a>
     </section>
 
     <!-- Features Section -->
