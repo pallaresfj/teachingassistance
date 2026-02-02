@@ -19,11 +19,15 @@ class DatabaseSeeder extends Seeder
     {
         User::create([
             'name' => 'Administrador',
-            'email' => 'admin@iedagropivijay.edu.co',
+            'email' => 'pallaresfj@asyservicios.com',
             'email_verified_at' => now(),
-            'password' => Hash::make('password'),
+            'password' => Hash::make('pass1234'),
             'role' => UserRole::SOPORTE,
             'is_active' => true,
+        ]);
+
+        $this->call([
+            SettingsSeeder::class,
         ]);
     }
 }
