@@ -540,7 +540,11 @@
         <p>
             Plataforma PWA para el registro de asistencia docente mediante códigos QR y validación por geolocalización.
         </p>
-        <a class="hero-cta" href="/app/login">Iniciar Sesión</a>
+        @auth
+            <a class="hero-cta" href="{{ url('/dashboard') }}">Mi Panel →</a>
+        @else
+            <a class="hero-cta" href="/app/login">Iniciar Sesión</a>
+        @endauth
     </section>
 
     <!-- Features Section -->

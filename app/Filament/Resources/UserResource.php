@@ -35,7 +35,7 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     public static function canAccess(): bool
     {
@@ -139,8 +139,12 @@ class UserResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Eliminar'),
             ])
             ->defaultSort('name')
             ->bulkActions([

@@ -36,7 +36,7 @@ class ScheduleResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -169,8 +169,12 @@ class ScheduleResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Eliminar'),
             ])
             ->bulkActions([
                 \Filament\Actions\DeleteBulkAction::make(),

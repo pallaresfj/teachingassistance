@@ -32,6 +32,7 @@ class GlobalStatsWidget extends BaseWidget
         $total = $query->count();
         $onTime = $query->clone()->where('status', AttendanceStatus::ON_TIME)->count();
         $late = $query->clone()->where('status', AttendanceStatus::LATE)->count();
+        $justified = $query->clone()->where('status', AttendanceStatus::JUSTIFIED)->count();
         $punctuality = $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
 
         return [
@@ -51,6 +52,11 @@ class GlobalStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
             
+            Stat::make('Justificadas', $justified)
+                ->description('Retardos justificados')
+                ->descriptionIcon('heroicon-m-document-check')
+                ->color('info'),
+            
             Stat::make('Puntualidad Global', $punctuality . '%')
                 ->description('Porcentaje de puntualidad')
                 ->descriptionIcon('heroicon-m-chart-bar')
@@ -60,7 +66,7 @@ class GlobalStatsWidget extends BaseWidget
 
     protected function getColumns(): int
     {
-        return 4;
+        return 3;
     }
 
     public static function canView(): bool

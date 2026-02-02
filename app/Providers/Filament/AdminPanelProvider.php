@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\Login as FilamentLogin;
 use App\Filament\Pages\Auth\EditProfile as FilamentEditProfile;
 use App\Filament\Pages\DirectivoDashboard;
 use App\Filament\Pages\DocenteDashboard;
+use App\Filament\Pages\SoporteDashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;

@@ -31,6 +31,11 @@ class PersonalStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock', IconPosition::Before)
                 ->color('warning'),
             
+            Stat::make('Justificadas', $stats['justified'] ?? 0)
+                ->description('Retardos justificados')
+                ->descriptionIcon('heroicon-m-document-check', IconPosition::Before)
+                ->color('info'),
+            
             Stat::make('Puntualidad', number_format($stats['punctuality'], 1) . '%')
                 ->description('Porcentaje de puntualidad')
                 ->descriptionIcon('heroicon-m-chart-bar', IconPosition::Before)

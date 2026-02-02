@@ -25,6 +25,9 @@
                             Retardos
                         </th>
                         <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
+                            Justificadas
+                        </th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: rgba(107, 114, 128, 0.2); color: inherit;">
                             Puntualidad
                         </th>
                     </tr>
@@ -44,6 +47,9 @@
                             <td style="padding: 0.75rem 1rem; text-align: center; color: #eab308; font-weight: 500;">
                                 {{ $item->late }}
                             </td>
+                            <td style="padding: 0.75rem 1rem; text-align: center; color: #3b82f6; font-weight: 500;">
+                                {{ $item->justified }}
+                            </td>
                             <td style="padding: 0.75rem 1rem; text-align: center;">
                                 <span style="display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;
                                     @if($item->punctuality >= 90) background-color: rgba(34, 197, 94, 0.2); color: #22c55e;
@@ -57,7 +63,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="padding: 2rem 1rem; text-align: center; color: #6b7280;">
+                            <td colspan="6" style="padding: 2rem 1rem; text-align: center; color: #6b7280;">
                                 No hay sedes activas registradas
                             </td>
                         </tr>

@@ -8,12 +8,13 @@ use App\Models\Attendance;
 use App\Models\Campus;
 use App\Models\User;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -35,7 +36,7 @@ class AttendanceResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     public static function canAccess(): bool
     {
@@ -48,10 +49,32 @@ class AttendanceResource extends Resource
             ->components([
                 Section::make('Información de Asistencia')
                     ->schema([
+                        TextInput::make('check_in_time')
+                            ->label('Hora de Ingreso')
+                            ->disabled()
+                            ->dehydrated(false),
+
                         Select::make('status')
                             ->label('Estado')
-                            ->options(AttendanceStatus::options())
-                            ->required(),
+                            ->options(function (Get $get) {
+                                $currentStatus = $get('status');
+                                
+                                // Si es LATE o JUSTIFIED, puede cambiar entre ambos
+                                if (in_array($currentStatus, ['late', 'justified'])) {
+                                    return [
+                                        AttendanceStatus::LATE->value => AttendanceStatus::LATE->label(),
+                                        AttendanceStatus::JUSTIFIED->value => AttendanceStatus::JUSTIFIED->label(),
+                                    ];
+                                }
+                                
+                                // Si es ON_TIME o cualquier otro, mostrar LATE y JUSTIFIED
+                                return [
+                                    AttendanceStatus::LATE->value => AttendanceStatus::LATE->label(),
+                                    AttendanceStatus::JUSTIFIED->value => AttendanceStatus::JUSTIFIED->label(),
+                                ];
+                            })
+                            ->required()
+                            ->native(false),
 
                         Textarea::make('notes')
                             ->label('Observaciones')
@@ -81,21 +104,16 @@ class AttendanceResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                TextColumn::make('check_out_time')
-                    ->label('SALIDA')
-                    ->time('H:i')
-                    ->placeholder('-'),
+                TextColumn::make('distance_from_campus')
+                    ->label('DISTANCIA')
+                    ->suffix(' m')
+                    ->sortable(),
 
                 TextColumn::make('status')
                     ->label('ESTADO')
                     ->badge()
                     ->formatStateUsing(fn($state) => $state?->label())
                     ->color(fn($state) => $state?->color()),
-
-                TextColumn::make('distance_from_campus')
-                    ->label('DISTANCIA')
-                    ->suffix(' m')
-                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('campus_id')
@@ -124,15 +142,21 @@ class AttendanceResource extends Resource
                             ->when($data['until'], fn($q) => $q->whereDate('check_in_time', '<=', $data['until']));
                     }),
             ])
-            ->actions([
-                ViewAction::make(),
-                EditAction::make()
-                    ->label('Modificar Estado'),
+            ->recordUrl(
+                fn (Attendance $record): ?string => $record->status->value !== 'on_time' 
+                    ? static::getUrl('edit', ['record' => $record]) 
+                    : null
+            )
+            ->recordActions([
+                \Filament\Actions\EditAction::make()
+                    ->label('Modificar Estado')
+                    ->iconButton()
+                    ->tooltip('Editar')
+                    ->visible(fn($record) => $record->status->value !== 'on_time'),
             ])
-            ->bulkActions([
-                // Read-only, no bulk actions
-            ])
-            ->defaultSort('check_in_time', 'desc');
+            ->bulkActions([])
+            ->defaultSort('check_in_time', 'desc')
+            ->recordClasses(fn($record) => $record->status->value === 'on_time' ? 'opacity-50' : '');
     }
 
     public static function getRelations(): array
@@ -151,9 +175,25 @@ class AttendanceResource extends Resource
         ];
     }
 
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Auth::user()->isDirectivo();
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::check() && Auth::user()->isDirectivo();
+    }
+
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        $user = Auth::user();
+        return $user && $user->isDirectivo();
     }
 
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool

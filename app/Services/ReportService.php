@@ -101,6 +101,10 @@ class ReportService
                 $query->whereBetween('check_in_time', [$startDate, $endDate])
                     ->where('status', AttendanceStatus::LATE->value);
             },
+            'attendances as justified_count' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('check_in_time', [$startDate, $endDate])
+                    ->where('status', AttendanceStatus::JUSTIFIED->value);
+            },
         ])->get();
     }
 
@@ -139,6 +143,13 @@ class ReportService
                 'attendances as late_count' => function ($q) use ($startDate, $endDate, $campusId) {
                     $q->whereBetween('check_in_time', [$startDate, $endDate])
                         ->where('status', AttendanceStatus::LATE->value);
+                    if ($campusId) {
+                        $q->where('campus_id', $campusId);
+                    }
+                },
+                'attendances as justified_count' => function ($q) use ($startDate, $endDate, $campusId) {
+                    $q->whereBetween('check_in_time', [$startDate, $endDate])
+                        ->where('status', AttendanceStatus::JUSTIFIED->value);
                     if ($campusId) {
                         $q->where('campus_id', $campusId);
                     }

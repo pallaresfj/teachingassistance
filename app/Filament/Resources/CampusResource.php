@@ -34,7 +34,7 @@ class CampusResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     public static function canAccess(): bool
     {
@@ -139,9 +139,10 @@ class CampusResource extends Resource
             ])
             ->actions([
                 Action::make('viewQr')
-                    ->label('Ver QR')
                     ->icon('heroicon-o-qr-code')
                     ->color('success')
+                    ->iconButton()
+                    ->tooltip('Ver QR')
                     ->modalHeading(fn (Campus $record) => "Código QR - {$record->name}")
                     ->modalContent(function (Campus $record) {
                         $qrService = app(QRGeneratorService::class);
@@ -165,9 +166,10 @@ class CampusResource extends Resource
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
                 Action::make('downloadQr')
-                    ->label('Descargar QR')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
+                    ->iconButton()
+                    ->tooltip('Descargar QR')
                     ->action(function (Campus $record) {
                         $qrService = app(QRGeneratorService::class);
                         $disk = \Illuminate\Support\Facades\Storage::disk('public');
@@ -193,9 +195,10 @@ class CampusResource extends Resource
                             ->send();
                     }),
                 Action::make('regenerateQr')
-                    ->label('Regenerar QR')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
+                    ->iconButton()
+                    ->tooltip('Regenerar QR')
                     ->requiresConfirmation()
                     ->modalHeading('Regenerar Código QR')
                     ->modalDescription('¿Está seguro de regenerar el QR? El código anterior dejará de funcionar.')
@@ -209,8 +212,12 @@ class CampusResource extends Resource
                             ->success()
                             ->send();
                     }),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Eliminar'),
             ])
             ->defaultSort('name')
             ->bulkActions([

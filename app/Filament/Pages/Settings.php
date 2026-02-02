@@ -18,6 +18,7 @@ class Settings extends Page implements HasForms
     use InteractsWithForms;
     protected static ?string $navigationLabel = 'Parámetros';
     protected static ?string $title = 'Configuración';
+    protected static ?int $navigationSort = 6;
     protected string $view = 'filament.pages.settings';
 
     public ?array $data = [];
@@ -29,7 +30,7 @@ class Settings extends Page implements HasForms
 
     public static function getNavigationGroup(): string|\UnitEnum|null
     {
-        return 'Configuración';
+        return null;
     }
 
     public static function getNavigationIcon(): string|\BackedEnum|null

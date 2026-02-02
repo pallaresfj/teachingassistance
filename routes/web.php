@@ -28,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
 
         if ($user->isSoporte()) {
-            return redirect('/app');
+            return redirect('/app/soporte-dashboard');
         }
 
         if ($user->isDirectivo()) {

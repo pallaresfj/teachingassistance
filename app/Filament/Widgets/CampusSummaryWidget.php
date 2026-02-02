@@ -33,7 +33,8 @@ class CampusSummaryWidget extends Widget
                 'campus_id',
                 DB::raw('COUNT(*) as total'),
                 DB::raw("SUM(CASE WHEN status = 'on_time' THEN 1 ELSE 0 END) as on_time"),
-                DB::raw("SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late")
+                DB::raw("SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late"),
+                DB::raw("SUM(CASE WHEN status = 'justified' THEN 1 ELSE 0 END) as justified")
             )
             ->groupBy('campus_id')
             ->get()
@@ -48,6 +49,7 @@ class CampusSummaryWidget extends Widget
                 $total = $stats?->total ?? 0;
                 $onTime = $stats?->on_time ?? 0;
                 $late = $stats?->late ?? 0;
+                $justified = $stats?->justified ?? 0;
                 $punctuality = $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
 
                 return (object) [
@@ -55,6 +57,7 @@ class CampusSummaryWidget extends Widget
                     'total' => $total,
                     'on_time' => $onTime,
                     'late' => $late,
+                    'justified' => $justified,
                     'punctuality' => $punctuality,
                 ];
             });

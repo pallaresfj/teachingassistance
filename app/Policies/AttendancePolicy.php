@@ -47,8 +47,8 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        // Only soporte can update attendances (e.g., to justify absences)
-        return $user->role === UserRole::SOPORTE;
+        // Soporte and directivos can update attendances
+        return in_array($user->role, [UserRole::SOPORTE, UserRole::DIRECTIVO]);
     }
 
     /**

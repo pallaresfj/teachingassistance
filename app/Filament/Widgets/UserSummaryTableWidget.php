@@ -47,6 +47,13 @@ class UserSummaryTableWidget extends BaseWidget
                     ->color('warning')
                     ->sortable(),
                 
+                Tables\Columns\TextColumn::make('justified_count')
+                    ->label('JUSTIFICADAS')
+                    ->alignCenter()
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
+                
                 Tables\Columns\TextColumn::make('punctuality')
                     ->label('PUNTUALIDAD')
                     ->alignCenter()
@@ -84,6 +91,10 @@ class UserSummaryTableWidget extends BaseWidget
                 },
                 'attendances as late_count' => function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'late')
+                        ->whereBetween('check_in_time', [$startDate, $endDate]);
+                },
+                'attendances as justified_count' => function ($query) use ($startDate, $endDate) {
+                    $query->where('status', 'justified')
                         ->whereBetween('check_in_time', [$startDate, $endDate]);
                 },
             ])
