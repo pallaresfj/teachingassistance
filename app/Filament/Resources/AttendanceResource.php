@@ -151,6 +151,7 @@ class AttendanceResource extends Resource
                 \Filament\Actions\EditAction::make()
                     ->label('Modificar Estado')
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Editar')
                     ->visible(fn($record) => $record->status->value !== 'on_time'),
             ])

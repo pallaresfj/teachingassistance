@@ -171,9 +171,11 @@ class ScheduleResource extends Resource
             ->actions([
                 EditAction::make()
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Editar'),
                 DeleteAction::make()
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Eliminar'),
             ])
             ->bulkActions([

@@ -284,6 +284,9 @@ class SchedulesRelationManager extends RelationManager
             ])
             ->actions([
                 EditAction::make()
+                    ->iconButton()
+                    ->iconSize('lg')
+                    ->tooltip('Editar')
                     ->before(function (EditAction $action, array $data, Schedule $record) {
                         $error = $this->validateNoOverlap($data, $record);
                         if ($error) {
@@ -295,7 +298,10 @@ class SchedulesRelationManager extends RelationManager
                             $action->halt();
                         }
                     }),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->iconSize('lg')
+                    ->tooltip('Eliminar'),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

@@ -142,6 +142,7 @@ class CampusResource extends Resource
                     ->icon('heroicon-o-qr-code')
                     ->color('success')
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Ver QR')
                     ->modalHeading(fn (Campus $record) => "Código QR - {$record->name}")
                     ->modalContent(function (Campus $record) {
@@ -169,6 +170,7 @@ class CampusResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Descargar QR')
                     ->action(function (Campus $record) {
                         $qrService = app(QRGeneratorService::class);
@@ -198,6 +200,7 @@ class CampusResource extends Resource
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Regenerar QR')
                     ->requiresConfirmation()
                     ->modalHeading('Regenerar Código QR')
@@ -214,9 +217,11 @@ class CampusResource extends Resource
                     }),
                 EditAction::make()
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Editar'),
                 DeleteAction::make()
                     ->iconButton()
+                    ->iconSize('lg')
                     ->tooltip('Eliminar'),
             ])
             ->defaultSort('name')
