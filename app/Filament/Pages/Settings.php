@@ -11,6 +11,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class Settings extends Page implements HasForms
@@ -25,7 +26,10 @@ class Settings extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isSoporte() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        
+        return $user?->isSoporte() ?? false;
     }
 
     public static function getNavigationGroup(): string|\UnitEnum|null

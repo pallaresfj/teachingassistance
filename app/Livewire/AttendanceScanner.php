@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use App\Services\AttendanceService;
 use App\Services\GeolocationService;
 use App\Services\QRGeneratorService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class AttendanceScanner extends Component
@@ -90,11 +93,13 @@ class AttendanceScanner extends Component
 
         // Check if user has schedule assigned for this campus today
         $attendanceService = app(AttendanceService::class);
-        $todaySchedule = $attendanceService->getTodaySchedule(auth()->user(), $campus);
+        /** @var User $user */
+        $user = Auth::user();
+        $todaySchedule = $attendanceService->getTodaySchedule($user, $campus);
 
         if (!$todaySchedule) {
             $dayName = now()->locale('es')->isoFormat('dddd');
-            if (auth()->user()->isDirectivo()) {
+            if ($user->isDirectivo()) {
                 $this->errorMessage = "No tiene horario asignado para el día {$dayName}.";
             } else {
                 $this->errorMessage = "No tiene horario asignado en la sede '{$campus->name}' para el día {$dayName}. Verifique que esté escaneando el código QR de la sede correcta.";
@@ -128,9 +133,9 @@ class AttendanceScanner extends Component
         }
 
         // Check if already registered today
-        if ($attendanceService->hasRegisteredToday(auth()->user(), $campus)) {
+        if ($attendanceService->hasRegisteredToday($user, $campus)) {
             $this->alreadyRegistered = true;
-            $this->infoMessage = auth()->user()->isDirectivo()
+            $this->infoMessage = $user->isDirectivo()
                 ? 'Ya ha registrado su asistencia hoy.'
                 : 'Ya ha registrado su asistencia hoy en esta sede.';
             $this->closeScanner();
@@ -140,7 +145,7 @@ class AttendanceScanner extends Component
         // Register attendance
         try {
             $attendance = $attendanceService->registerAttendance(
-                auth()->user(),
+                $user,
                 $campus,
                 $this->latitude,
                 $this->longitude,
@@ -156,8 +161,8 @@ class AttendanceScanner extends Component
             // Refresh the page after a short delay
             $this->dispatch('attendanceRegistered', status: $attendance->status->value);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error registering attendance: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+            Log::error('Error registering attendance: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
                 'campus_id' => $campus->id,
                 'trace' => $e->getTraceAsString(),
             ]);

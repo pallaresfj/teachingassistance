@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -24,7 +26,8 @@ class ProfileEdit extends Component
 
     public function mount(): void
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         $this->name = $user->name;
         $this->email = $user->email;
         $this->phone = $user->phone ?? '';
@@ -34,12 +37,13 @@ class ProfileEdit extends Component
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . auth()->id()],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . Auth::id()],
             'phone' => ['nullable', 'string', 'max:20'],
             'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
 
         if ($this->photo) {
             if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
@@ -67,7 +71,9 @@ class ProfileEdit extends Component
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        auth()->user()->update([
+        /** @var User $user */
+        $user = Auth::user();
+        $user->update([
             'password' => Hash::make($this->password),
         ]);
 

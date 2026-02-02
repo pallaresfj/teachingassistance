@@ -25,7 +25,8 @@ Route::post('/logout', function (Request $request) {
 // Dashboard redirect based on role
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         if ($user->isSoporte()) {
             return redirect('/app/soporte-dashboard');
@@ -64,7 +65,7 @@ Route::middleware(['auth', 'role:docente,directivo'])->prefix('docente')->name('
         return redirect('/app/docente-dashboard');
     })->name('dashboard');
     Route::get('/scanner', function () {
-        return view('pages.scanner');
+        return redirect('/app/docente-dashboard');
     })->name('scanner');
 });
 
@@ -74,7 +75,7 @@ Route::middleware(['auth', 'role:directivo'])->prefix('directivo')->name('direct
         return redirect('/app/directivo-dashboard');
     })->name('dashboard');
     Route::get('/reports', function () {
-        return view('pages.reports');
+        return redirect('/app/directivo-dashboard');
     })->name('reports');
 });
 
