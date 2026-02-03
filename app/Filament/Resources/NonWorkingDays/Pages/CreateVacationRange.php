@@ -14,10 +14,10 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use App\Filament\Resources\NonWorkingDays\NonWorkingDayResource;
 
 class CreateVacationRange extends Page implements HasForms
@@ -42,10 +42,10 @@ class CreateVacationRange extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Rango de fechas')
                     ->description('Cree múltiples días no laborables de una sola vez')
                     ->schema([
@@ -77,11 +77,12 @@ class CreateVacationRange extends Page implements HasForms
 
                         Select::make('campus_id')
                             ->label('Sede')
-                            ->relationship('campus', 'name')
+                            ->options(
+                                \App\Models\Campus::pluck('name', 'id')->toArray()
+                            )
                             ->placeholder('Todas las sedes')
                             ->helperText('Deje vacío para aplicar a todas las sedes')
-                            ->searchable()
-                            ->preload(),
+                            ->searchable(),
 
                         Checkbox::make('exclude_weekends')
                             ->label('Excluir sábados y domingos')
