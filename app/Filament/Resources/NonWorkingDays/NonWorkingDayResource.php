@@ -29,9 +29,9 @@ class NonWorkingDayResource extends Resource
 
     protected static ?string $navigationLabel = 'Días no laborables';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Configuración';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
     {
