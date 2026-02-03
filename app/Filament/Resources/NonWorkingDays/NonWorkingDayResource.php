@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class NonWorkingDayResource extends Resource
 {
@@ -32,6 +33,11 @@ class NonWorkingDayResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?int $navigationSort = 5;
+
+    public static function canAccess(): bool
+    {
+        return Auth::check() && Auth::user()->isSoporte();
+    }
 
     public static function form(Schema $schema): Schema
     {
