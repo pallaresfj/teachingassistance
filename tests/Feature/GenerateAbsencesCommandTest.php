@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @mixin Tests\TestCase
- */
-
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
@@ -13,6 +9,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+
+use function Pest\Laravel\artisan;
 
 uses(RefreshDatabase::class);
 
@@ -39,7 +37,7 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
+        artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
         $absence = Attendance::where('user_id', $teacher->id)
@@ -82,7 +80,7 @@ describe('GenerateAbsences Command', function () {
             'status' => AttendanceStatus::ON_TIME,
         ]);
 
-        $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
+        artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
         $attendances = Attendance::where('user_id', $teacher->id)
@@ -120,7 +118,7 @@ describe('GenerateAbsences Command', function () {
             'type' => NonWorkingDay::TYPE_HOLIDAY,
         ]);
 
-        $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
+        artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
         $absence = Attendance::where('user_id', $teacher->id)
@@ -150,7 +148,7 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
+        artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
         $absence = Attendance::where('user_id', $teacher->id)
@@ -181,7 +179,7 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        $this->artisan('attendance:generate-absences', [
+        artisan('attendance:generate-absences', [
             '--date' => $monday->toDateString(),
             '--force' => true,
         ])->assertExitCode(0);
@@ -214,7 +212,7 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        $this->artisan('attendance:generate-absences', [
+        artisan('attendance:generate-absences', [
             '--date' => $monday->toDateString(),
             '--dry-run' => true,
         ])->assertExitCode(0);
@@ -247,7 +245,7 @@ describe('GenerateAbsences Command', function () {
 
         $oldMonday = Carbon::parse('2026-01-26');
 
-        $this->artisan('attendance:generate-absences', ['--date' => $oldMonday->toDateString()])
+        artisan('attendance:generate-absences', ['--date' => $oldMonday->toDateString()])
             ->assertExitCode(0);
 
         $absence = Attendance::where('user_id', $teacher->id)
