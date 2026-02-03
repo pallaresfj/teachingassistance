@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @mixin Tests\TestCase
+ */
+
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
@@ -14,38 +18,31 @@ uses(RefreshDatabase::class);
 
 describe('GenerateAbsences Command', function () {
 
-    beforeEach(function () {
-        // Habilitar feature flag para tests
+    it('generates absence records for teachers without attendance', function () {
         Config::set('attendance.absence_tracking_enabled', true);
         Config::set('attendance.absence_tracking_start_date', '2026-01-01');
 
-        // Crear datos de prueba
-        $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
-        $this->teacher = User::factory()->create([
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
             'name' => 'Profesor Test',
             'is_active' => true,
         ]);
-    });
 
-    it('generates absence records for teachers without attendance', function () {
-        // Crear horario para el lunes (día 1)
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
-            'day_of_week' => 1, // Lunes
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
+            'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
             'is_active' => true,
         ]);
 
-        // Simular que es martes y procesamos el lunes anterior
-        $monday = Carbon::parse('2026-02-02'); // Lunes 2 de febrero 2026
+        $monday = Carbon::parse('2026-02-02');
 
         $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
-        // Verificar que se creó el registro de ausencia
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->first();
 
@@ -55,10 +52,18 @@ describe('GenerateAbsences Command', function () {
     });
 
     it('does not generate absence if teacher already registered', function () {
-        // Crear horario para el lunes
+        Config::set('attendance.absence_tracking_enabled', true);
+        Config::set('attendance.absence_tracking_start_date', '2026-01-01');
+
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
@@ -67,10 +72,9 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        // Crear registro de asistencia existente
         Attendance::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'date' => $monday->toDateString(),
             'check_in_time' => $monday->copy()->setTime(8, 5),
             'latitude' => 10.0,
@@ -81,8 +85,7 @@ describe('GenerateAbsences Command', function () {
         $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
-        // Verificar que solo existe el registro original
-        $attendances = Attendance::where('user_id', $this->teacher->id)
+        $attendances = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->get();
 
@@ -91,10 +94,18 @@ describe('GenerateAbsences Command', function () {
     });
 
     it('skips non-working days', function () {
-        // Crear horario para el lunes
+        Config::set('attendance.absence_tracking_enabled', true);
+        Config::set('attendance.absence_tracking_start_date', '2026-01-01');
+
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
@@ -103,7 +114,6 @@ describe('GenerateAbsences Command', function () {
 
         $monday = Carbon::parse('2026-02-02');
 
-        // Marcar el lunes como día no laborable
         NonWorkingDay::create([
             'date' => $monday->toDateString(),
             'name' => 'Día Festivo',
@@ -113,8 +123,7 @@ describe('GenerateAbsences Command', function () {
         $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
-        // Verificar que NO se creó registro de ausencia
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->first();
 
@@ -124,9 +133,15 @@ describe('GenerateAbsences Command', function () {
     it('respects feature flag when disabled', function () {
         Config::set('attendance.absence_tracking_enabled', false);
 
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
@@ -138,8 +153,7 @@ describe('GenerateAbsences Command', function () {
         $this->artisan('attendance:generate-absences', ['--date' => $monday->toDateString()])
             ->assertExitCode(0);
 
-        // Verificar que NO se creó registro (feature desactivado)
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->first();
 
@@ -148,10 +162,17 @@ describe('GenerateAbsences Command', function () {
 
     it('works with --force flag when feature is disabled', function () {
         Config::set('attendance.absence_tracking_enabled', false);
+        Config::set('attendance.absence_tracking_start_date', '2026-01-01');
+
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
 
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
@@ -165,8 +186,7 @@ describe('GenerateAbsences Command', function () {
             '--force' => true,
         ])->assertExitCode(0);
 
-        // Verificar que SÍ se creó registro con --force
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->first();
 
@@ -174,9 +194,18 @@ describe('GenerateAbsences Command', function () {
     });
 
     it('dry-run mode does not create records', function () {
+        Config::set('attendance.absence_tracking_enabled', true);
+        Config::set('attendance.absence_tracking_start_date', '2026-01-01');
+
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
             'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
@@ -190,8 +219,7 @@ describe('GenerateAbsences Command', function () {
             '--dry-run' => true,
         ])->assertExitCode(0);
 
-        // Verificar que NO se creó registro en dry-run
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $monday)
             ->first();
 
@@ -199,25 +227,30 @@ describe('GenerateAbsences Command', function () {
     });
 
     it('respects absence tracking start date', function () {
+        Config::set('attendance.absence_tracking_enabled', true);
         Config::set('attendance.absence_tracking_start_date', '2026-02-01');
 
+        $campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
         Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
-            'day_of_week' => 1, // Lunes
+            'user_id' => $teacher->id,
+            'campus_id' => $campus->id,
+            'day_of_week' => 1,
             'check_in_time' => '08:00:00',
             'check_out_time' => '12:00:00',
             'is_active' => true,
         ]);
 
-        // Fecha anterior al inicio de tracking
         $oldMonday = Carbon::parse('2026-01-26');
 
         $this->artisan('attendance:generate-absences', ['--date' => $oldMonday->toDateString()])
             ->assertExitCode(0);
 
-        // Verificar que NO se creó registro (fecha anterior)
-        $absence = Attendance::where('user_id', $this->teacher->id)
+        $absence = Attendance::where('user_id', $teacher->id)
             ->whereDate('date', $oldMonday)
             ->first();
 
