@@ -7,11 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
-    // Crear un campus de prueba
-    $this->campus = Campus::factory()->create(['name' => 'Campus Principal']);
-});
-
 describe('NonWorkingDay Model', function () {
 
     it('can create a non-working day', function () {
@@ -55,6 +50,7 @@ describe('NonWorkingDay Model', function () {
     });
 
     it('can filter non-working days by campus', function () {
+        $campus = Campus::factory()->create(['name' => 'Campus Principal']);
         $campus2 = Campus::factory()->create(['name' => 'Campus Secundario']);
 
         // Día para campus específico
@@ -62,7 +58,7 @@ describe('NonWorkingDay Model', function () {
             'date' => '2026-03-15',
             'name' => 'Día especial campus principal',
             'type' => NonWorkingDay::TYPE_SPECIAL,
-            'campus_id' => $this->campus->id,
+            'campus_id' => $campus->id,
         ]);
 
         // Día global (todas las sedes)
@@ -74,11 +70,11 @@ describe('NonWorkingDay Model', function () {
         ]);
 
         // El 15 de marzo solo aplica al campus principal
-        expect(NonWorkingDay::isNonWorkingDay('2026-03-15', $this->campus->id))->toBeTrue();
+        expect(NonWorkingDay::isNonWorkingDay('2026-03-15', $campus->id))->toBeTrue();
         expect(NonWorkingDay::isNonWorkingDay('2026-03-15', $campus2->id))->toBeFalse();
 
         // El 20 de marzo aplica a todas las sedes
-        expect(NonWorkingDay::isNonWorkingDay('2026-03-20', $this->campus->id))->toBeTrue();
+        expect(NonWorkingDay::isNonWorkingDay('2026-03-20', $campus->id))->toBeTrue();
         expect(NonWorkingDay::isNonWorkingDay('2026-03-20', $campus2->id))->toBeTrue();
     });
 

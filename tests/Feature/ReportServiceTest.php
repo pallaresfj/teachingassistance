@@ -12,28 +12,28 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
-    $this->reportService = app(ReportService::class);
-    $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
-    $this->teacher = User::factory()->create([
-        'name' => 'Profesor Test',
-        'is_active' => true,
-    ]);
+describe('ReportService - Full Attendance Report', function () {
 
-    // Crear horario de lunes a viernes
-    foreach ([1, 2, 3, 4, 5] as $day) {
-        Schedule::create([
-            'user_id' => $this->teacher->id,
-            'campus_id' => $this->campus->id,
-            'day_of_week' => $day,
-            'check_in_time' => '08:00:00',
-            'check_out_time' => '12:00:00',
+    beforeEach(function () {
+        $this->reportService = app(ReportService::class);
+        $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $this->teacher = User::factory()->create([
+            'name' => 'Profesor Test',
             'is_active' => true,
         ]);
-    }
-});
 
-describe('ReportService - Full Attendance Report', function () {
+        // Crear horario de lunes a viernes
+        foreach ([1, 2, 3, 4, 5] as $day) {
+            Schedule::create([
+                'user_id' => $this->teacher->id,
+                'campus_id' => $this->campus->id,
+                'day_of_week' => $day,
+                'check_in_time' => '08:00:00',
+                'check_out_time' => '12:00:00',
+                'is_active' => true,
+            ]);
+        }
+    });
 
     it('calculates expected work days correctly', function () {
         $startDate = Carbon::parse('2026-02-02'); // Lunes
@@ -229,6 +229,27 @@ describe('ReportService - Full Attendance Report', function () {
 });
 
 describe('ReportService - Absence Summary Report', function () {
+
+    beforeEach(function () {
+        $this->reportService = app(ReportService::class);
+        $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $this->teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+
+        // Crear horario de lunes a viernes
+        foreach ([1, 2, 3, 4, 5] as $day) {
+            Schedule::create([
+                'user_id' => $this->teacher->id,
+                'campus_id' => $this->campus->id,
+                'day_of_week' => $day,
+                'check_in_time' => '08:00:00',
+                'check_out_time' => '12:00:00',
+                'is_active' => true,
+            ]);
+        }
+    });
 
     it('generates summary for all users', function () {
         $teacher2 = User::factory()->create(['name' => 'Profesor 2', 'is_active' => true]);

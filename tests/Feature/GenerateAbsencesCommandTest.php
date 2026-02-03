@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Commands\GenerateAbsences;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
@@ -13,20 +12,20 @@ use Illuminate\Support\Facades\Config;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
-    // Habilitar feature flag para tests
-    Config::set('attendance.absence_tracking_enabled', true);
-    Config::set('attendance.absence_tracking_start_date', '2026-01-01');
-
-    // Crear datos de prueba
-    $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
-    $this->teacher = User::factory()->create([
-        'name' => 'Profesor Test',
-        'is_active' => true,
-    ]);
-});
-
 describe('GenerateAbsences Command', function () {
+
+    beforeEach(function () {
+        // Habilitar feature flag para tests
+        Config::set('attendance.absence_tracking_enabled', true);
+        Config::set('attendance.absence_tracking_start_date', '2026-01-01');
+
+        // Crear datos de prueba
+        $this->campus = Campus::factory()->create(['name' => 'Campus Test']);
+        $this->teacher = User::factory()->create([
+            'name' => 'Profesor Test',
+            'is_active' => true,
+        ]);
+    });
 
     it('generates absence records for teachers without attendance', function () {
         // Crear horario para el lunes (día 1)
