@@ -61,25 +61,27 @@ class NonWorkingDay extends Model
         $date = $date instanceof Carbon ? $date : Carbon::parse($date);
 
         $query = static::query()
-            ->where(function ($q) use ($date) {
-                // Fecha exacta
-                $q->where('date', $date->toDateString())
-                    ->where('is_recurring', false);
+            // Filtrar por campus: aplica si campus_id es null (todas las sedes) o coincide con el campus
+            ->where(function ($q) use ($campusId) {
+                $q->whereNull('campus_id');
+                if ($campusId) {
+                    $q->orWhere('campus_id', $campusId);
+                }
             })
-            ->orWhere(function ($q) use ($date) {
-                // Fechas recurrentes (mismo mes y día, cualquier año)
-                $q->whereMonth('date', $date->month)
-                    ->whereDay('date', $date->day)
-                    ->where('is_recurring', true);
+            // Filtrar por fecha (exacta o recurrente)
+            ->where(function ($q) use ($date) {
+                $q->where(function ($subQ) use ($date) {
+                    // Fecha exacta no recurrente - usar whereDate para compatibilidad SQLite/MySQL
+                    $subQ->whereDate('date', $date->toDateString())
+                        ->where('is_recurring', false);
+                })
+                ->orWhere(function ($subQ) use ($date) {
+                    // Fechas recurrentes (mismo mes y día, cualquier año)
+                    $subQ->whereMonth('date', $date->month)
+                        ->whereDay('date', $date->day)
+                        ->where('is_recurring', true);
+                });
             });
-
-        // Filtrar por campus: aplica si campus_id es null (todas las sedes) o coincide con el campus
-        $query->where(function ($q) use ($campusId) {
-            $q->whereNull('campus_id');
-            if ($campusId) {
-                $q->orWhere('campus_id', $campusId);
-            }
-        });
 
         return $query->exists();
     }

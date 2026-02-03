@@ -73,7 +73,9 @@ describe('GenerateAbsences Command', function () {
             'user_id' => $this->teacher->id,
             'campus_id' => $this->campus->id,
             'date' => $monday->toDateString(),
-            'check_in_time' => $monday->setTime(8, 5),
+            'check_in_time' => $monday->copy()->setTime(8, 5),
+            'latitude' => 10.0,
+            'longitude' => -75.0,
             'status' => AttendanceStatus::ON_TIME,
         ]);
 
