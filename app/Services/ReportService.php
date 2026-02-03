@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
+use App\Models\NonWorkingDay;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -213,5 +214,153 @@ class ReportService
         }
 
         return $query->get()->groupBy('date');
+    }
+
+    /**
+     * Generate a comprehensive attendance report for a user.
+     * Includes: expected days, present days, absences, on-time, late, justified.
+     *
+     * @param int $userId
+     * @param Carbon|null $startDate
+     * @param Carbon|null $endDate
+     * @param int|null $campusId
+     * @return array
+     */
+    public function generateFullAttendanceReport(
+        int $userId,
+        ?Carbon $startDate = null,
+        ?Carbon $endDate = null,
+        ?int $campusId = null
+    ): array {
+        $startDate = $startDate ?? now()->startOfMonth();
+        $endDate = $endDate ?? now()->endOfMonth();
+
+        $user = User::with('schedules')->findOrFail($userId);
+
+        // Obtener días programados (días de la semana que tiene horario activo)
+        $scheduleQuery = $user->schedules()->where('is_active', true);
+        if ($campusId) {
+            $scheduleQuery->where('campus_id', $campusId);
+        }
+        $scheduledDaysOfWeek = $scheduleQuery->pluck('day_of_week')->unique()->toArray();
+
+        // Calcular días laborables esperados (excluyendo días no laborables)
+        $expectedDays = 0;
+        $workingDates = [];
+        $current = $startDate->copy();
+
+        while ($current->lte($endDate)) {
+            if (in_array($current->dayOfWeek, $scheduledDaysOfWeek)) {
+                if (!NonWorkingDay::isNonWorkingDay($current, $campusId)) {
+                    $expectedDays++;
+                    $workingDates[] = $current->toDateString();
+                }
+            }
+            $current->addDay();
+        }
+
+        // Obtener registros de asistencia en el período
+        $attendanceQuery = Attendance::where('user_id', $userId)
+            ->whereBetween('date', [$startDate, $endDate]);
+        
+        if ($campusId) {
+            $attendanceQuery->where('campus_id', $campusId);
+        }
+        
+        $attendances = $attendanceQuery->get();
+
+        // Contar por estado
+        $onTime = $attendances->where('status', AttendanceStatus::ON_TIME)->count();
+        $late = $attendances->where('status', AttendanceStatus::LATE)->count();
+        $absent = $attendances->where('status', AttendanceStatus::ABSENT)->count();
+        $justified = $attendances->where('status', AttendanceStatus::JUSTIFIED)->count();
+        $present = $onTime + $late + $justified;
+
+        // Calcular porcentajes
+        $attendanceRate = $expectedDays > 0 ? round(($present / $expectedDays) * 100, 1) : 0;
+        $punctualityRate = $present > 0 ? round(($onTime / $present) * 100, 1) : 0;
+
+        // Obtener días no laborables en el rango
+        $nonWorkingDays = NonWorkingDay::getInRange($startDate, $endDate, $campusId);
+
+        return [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'period' => [
+                'start' => $startDate->toDateString(),
+                'end' => $endDate->toDateString(),
+            ],
+            'summary' => [
+                'expected_days' => $expectedDays,
+                'present' => $present,
+                'absent' => $absent,
+                'on_time' => $onTime,
+                'late' => $late,
+                'justified' => $justified,
+            ],
+            'rates' => [
+                'attendance_rate' => $attendanceRate,
+                'punctuality_rate' => $punctualityRate,
+                'absence_rate' => $expectedDays > 0 ? round(($absent / $expectedDays) * 100, 1) : 0,
+            ],
+            'non_working_days' => $nonWorkingDays->map(fn($d) => [
+                'date' => $d->date->toDateString(),
+                'name' => $d->name,
+                'type' => $d->type,
+            ]),
+            'details' => $attendances->map(fn($a) => [
+                'date' => $a->date->toDateString() ?? null,
+                'check_in_time' => $a->check_in_time?->format('H:i:s'),
+                'status' => $a->status->value,
+                'status_label' => $a->status->label(),
+            ]),
+        ];
+    }
+
+    /**
+     * Generate absence summary report for all users.
+     *
+     * @param Carbon|null $startDate
+     * @param Carbon|null $endDate
+     * @param int|null $campusId
+     * @return Collection
+     */
+    public function generateAbsenceSummaryReport(
+        ?Carbon $startDate = null,
+        ?Carbon $endDate = null,
+        ?int $campusId = null
+    ): Collection {
+        $startDate = $startDate ?? now()->startOfMonth();
+        $endDate = $endDate ?? now()->endOfMonth();
+
+        return User::where('is_active', true)
+            ->whereHas('schedules', fn($q) => $q->where('is_active', true))
+            ->get()
+            ->map(function ($user) use ($startDate, $endDate, $campusId) {
+                $report = $this->generateFullAttendanceReport(
+                    $user->id,
+                    $startDate,
+                    $endDate,
+                    $campusId
+                );
+
+                return [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'expected_days' => $report['summary']['expected_days'],
+                    'present' => $report['summary']['present'],
+                    'absent' => $report['summary']['absent'],
+                    'on_time' => $report['summary']['on_time'],
+                    'late' => $report['summary']['late'],
+                    'justified' => $report['summary']['justified'],
+                    'attendance_rate' => $report['rates']['attendance_rate'],
+                    'punctuality_rate' => $report['rates']['punctuality_rate'],
+                ];
+            })
+            ->sortByDesc('absent')
+            ->values();
     }
 }

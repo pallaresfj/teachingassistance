@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Campus;
+use App\Models\NonWorkingDay;
 use App\Models\Schedule;
 use App\Models\Setting;
 use App\Models\User;
@@ -238,13 +239,15 @@ class AttendanceService
 
     /**
      * Get expected work days count based on user schedules.
+     * Excludes non-working days when absence tracking is enabled.
      *
      * @param User $user
      * @param Carbon $startDate
      * @param Carbon $endDate
+     * @param int|null $campusId Optional campus filter for non-working days
      * @return int
      */
-    private function getWorkDaysCount(User $user, Carbon $startDate, Carbon $endDate): int
+    private function getWorkDaysCount(User $user, Carbon $startDate, Carbon $endDate, ?int $campusId = null): int
     {
         $scheduledDays = $user->schedules()
             ->where('is_active', true)
@@ -257,15 +260,57 @@ class AttendanceService
 
         $count = 0;
         $current = $startDate->copy();
+        $checkNonWorkingDays = config('attendance.absence_tracking_enabled', false);
 
         while ($current->lte($endDate)) {
             if (in_array($current->dayOfWeek, $scheduledDays)) {
+                // Si el tracking de ausencias está habilitado, excluir días no laborables
+                if ($checkNonWorkingDays && $this->isNonWorkingDay($current, $campusId)) {
+                    $current->addDay();
+                    continue;
+                }
                 $count++;
             }
             $current->addDay();
         }
 
         return $count;
+    }
+
+    /**
+     * Check if a date is a non-working day.
+     *
+     * @param Carbon|string $date
+     * @param int|null $campusId
+     * @return bool
+     */
+    public function isNonWorkingDay(Carbon|string $date, ?int $campusId = null): bool
+    {
+        return NonWorkingDay::isNonWorkingDay($date, $campusId);
+    }
+
+    /**
+     * Check if today is a working day for a specific campus.
+     *
+     * @param int|null $campusId
+     * @return bool
+     */
+    public function isWorkingDay(?int $campusId = null): bool
+    {
+        return !$this->isNonWorkingDay(now(), $campusId);
+    }
+
+    /**
+     * Get non-working days in a date range.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param int|null $campusId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getNonWorkingDaysInRange(Carbon $startDate, Carbon $endDate, ?int $campusId = null)
+    {
+        return NonWorkingDay::getInRange($startDate, $endDate, $campusId);
     }
 
     /**
