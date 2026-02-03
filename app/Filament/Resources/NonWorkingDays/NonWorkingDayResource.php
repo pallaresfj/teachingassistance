@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\NonWorkingDays;
 
 use App\Filament\Resources\NonWorkingDays\Pages\CreateNonWorkingDay;
+use App\Filament\Resources\NonWorkingDays\Pages\CreateVacationRange;
 use App\Filament\Resources\NonWorkingDays\Pages\EditNonWorkingDay;
 use App\Filament\Resources\NonWorkingDays\Pages\ListNonWorkingDays;
 use App\Filament\Resources\NonWorkingDays\Schemas\NonWorkingDayForm;
@@ -54,6 +55,7 @@ class NonWorkingDayResource extends Resource
         return [
             'index' => ListNonWorkingDays::route('/'),
             'create' => CreateNonWorkingDay::route('/create'),
+            'create-range' => CreateVacationRange::route('/create-range'),
             'edit' => EditNonWorkingDay::route('/{record}/edit'),
         ];
     }
