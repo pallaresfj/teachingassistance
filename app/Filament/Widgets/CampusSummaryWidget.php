@@ -28,13 +28,14 @@ class CampusSummaryWidget extends Widget
 
         // Get attendance stats grouped by campus
         $attendanceStats = Attendance::query()
-            ->whereBetween('check_in_time', [$startDate, $endDate])
+            ->whereBetween('date', [$startDate, $endDate])
             ->select(
                 'campus_id',
                 DB::raw('COUNT(*) as total'),
                 DB::raw("SUM(CASE WHEN status = 'on_time' THEN 1 ELSE 0 END) as on_time"),
                 DB::raw("SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late"),
-                DB::raw("SUM(CASE WHEN status = 'justified' THEN 1 ELSE 0 END) as justified")
+                DB::raw("SUM(CASE WHEN status = 'justified' THEN 1 ELSE 0 END) as justified"),
+                DB::raw("SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent")
             )
             ->groupBy('campus_id')
             ->get()
@@ -50,6 +51,7 @@ class CampusSummaryWidget extends Widget
                 $onTime = $stats?->on_time ?? 0;
                 $late = $stats?->late ?? 0;
                 $justified = $stats?->justified ?? 0;
+                $absent = $stats?->absent ?? 0;
                 $punctuality = $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
 
                 return (object) [
@@ -58,6 +60,7 @@ class CampusSummaryWidget extends Widget
                     'on_time' => $onTime,
                     'late' => $late,
                     'justified' => $justified,
+                    'absent' => $absent,
                     'punctuality' => $punctuality,
                 ];
             });

@@ -54,6 +54,13 @@ class UserSummaryTableWidget extends BaseWidget
                     ->color('info')
                     ->sortable(),
                 
+                Tables\Columns\TextColumn::make('absent_count')
+                    ->label('INASISTENCIAS')
+                    ->alignCenter()
+                    ->badge()
+                    ->color('danger')
+                    ->sortable(),
+                
                 Tables\Columns\TextColumn::make('punctuality')
                     ->label('PUNTUALIDAD')
                     ->alignCenter()
@@ -83,19 +90,23 @@ class UserSummaryTableWidget extends BaseWidget
             ->where('is_active', true)
             ->withCount([
                 'attendances' => function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('check_in_time', [$startDate, $endDate]);
+                    $query->whereBetween('date', [$startDate, $endDate]);
                 },
                 'attendances as on_time_count' => function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'on_time')
-                        ->whereBetween('check_in_time', [$startDate, $endDate]);
+                        ->whereBetween('date', [$startDate, $endDate]);
                 },
                 'attendances as late_count' => function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'late')
-                        ->whereBetween('check_in_time', [$startDate, $endDate]);
+                        ->whereBetween('date', [$startDate, $endDate]);
                 },
                 'attendances as justified_count' => function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'justified')
-                        ->whereBetween('check_in_time', [$startDate, $endDate]);
+                        ->whereBetween('date', [$startDate, $endDate]);
+                },
+                'attendances as absent_count' => function ($query) use ($startDate, $endDate) {
+                    $query->where('status', 'absent')
+                        ->whereBetween('date', [$startDate, $endDate]);
                 },
             ])
             ->having('attendances_count', '>', 0);

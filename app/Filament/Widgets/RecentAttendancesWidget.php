@@ -45,6 +45,7 @@ class RecentAttendancesWidget extends BaseWidget
                         AttendanceStatus::ON_TIME => 'success',
                         AttendanceStatus::LATE => 'warning',
                         AttendanceStatus::JUSTIFIED => 'info',
+                        AttendanceStatus::ABSENT => 'danger',
                     }),
             ])
             ->defaultSort('check_in_time', 'desc')

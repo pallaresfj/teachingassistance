@@ -47,10 +47,10 @@
                 <span>Justificada</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.375rem;">
-                <svg style="width: 1rem; height: 1rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="9" stroke-width="2" stroke-dasharray="4 2"/>
+                <svg style="width: 1rem; height: 1rem; color: #ef4444;" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
                 </svg>
-                <span>Sin registro</span>
+                <span>Inasistencia</span>
             </div>
         </div>
 
@@ -84,10 +84,14 @@
                     $isWeekend = $isSunday || $isSaturday;
                     $isPast = $data['date']->isPast() && !$isToday;
                     $statusValue = $data['hasAttendance'] ? $data['status']->value : null;
+                    $hasSchedule = $data['hasSchedule'] ?? false;
+                    $isNonWorkingDay = $data['isNonWorkingDay'] ?? false;
+                    // Solo mostrar inasistencia si: es día pasado, tiene horario asignado, no es día no laborable y no tiene registro
+                    $showAsAbsent = $isPast && $hasSchedule && !$isNonWorkingDay && !$data['hasAttendance'];
                 @endphp
                 <div 
                     style="aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isToday ? 'box-shadow: 0 0 0 2px #3b82f6;' : '' }} {{ $data['hasAttendance'] ? 'background-color: rgba(255,255,255,0.1);' : '' }}"
-                    title="{{ $data['date']->isoFormat('dddd, D [de] MMMM') }}{{ $data['hasAttendance'] ? ' - ' . $data['status']->label() : '' }}"
+                    title="{{ $data['date']->isoFormat('dddd, D [de] MMMM') }}{{ $data['hasAttendance'] ? ' - ' . $data['status']->label() : ($showAsAbsent ? ' - Sin registro' : '') }}"
                 >
                     {{-- Day number --}}
                     <span style="font-size: 0.75rem; font-weight: 500; color: {{ $isToday ? '#60a5fa' : ($isWeekend ? '#f87171' : '#9ca3af') }};">
@@ -121,11 +125,11 @@
                                     @break
                             @endswitch
                         </div>
-                    @elseif($isPast && !$isWeekend)
-                        {{-- Sin registro para días pasados (excepto fines de semana) --}}
+                    @elseif($showAsAbsent)
+                        {{-- Inasistencia: día pasado con horario asignado sin registro --}}
                         <div style="margin-top: 0.125rem;">
-                            <svg style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="9" stroke-width="2" stroke-dasharray="4 2"/>
+                            <svg style="width: 1.25rem; height: 1.25rem; color: #ef4444;" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
                             </svg>
                         </div>
                     @endif

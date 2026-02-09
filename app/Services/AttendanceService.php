@@ -212,7 +212,7 @@ class AttendanceService
         $endDate = $endDate ?? now()->endOfMonth();
 
         $attendances = Attendance::where('user_id', $user->id)
-            ->whereBetween('check_in_time', [$startDate, $endDate])
+            ->whereBetween('date', [$startDate, $endDate])
             ->get();
 
         $stats = [

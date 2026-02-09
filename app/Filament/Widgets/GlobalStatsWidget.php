@@ -24,15 +24,16 @@ class GlobalStatsWidget extends BaseWidget
         }
 
         if ($this->startDate && $this->endDate) {
-            $query->whereBetween('check_in_time', [$this->startDate, $this->endDate]);
+            $query->whereBetween('date', [$this->startDate, $this->endDate]);
         } else {
-            $query->whereBetween('check_in_time', [now()->startOfMonth(), now()->endOfMonth()]);
+            $query->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()]);
         }
 
         $total = $query->count();
         $onTime = $query->clone()->where('status', AttendanceStatus::ON_TIME)->count();
         $late = $query->clone()->where('status', AttendanceStatus::LATE)->count();
         $justified = $query->clone()->where('status', AttendanceStatus::JUSTIFIED)->count();
+        $absent = $query->clone()->where('status', AttendanceStatus::ABSENT)->count();
         $punctuality = $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
 
         return [
@@ -56,6 +57,11 @@ class GlobalStatsWidget extends BaseWidget
                 ->description('Retardos justificados')
                 ->descriptionIcon('heroicon-m-document-check')
                 ->color('info'),
+
+            Stat::make('Inasistencias', $absent)
+                ->description('Faltas registradas')
+                ->descriptionIcon('heroicon-m-x-circle')
+                ->color('danger'),
             
             Stat::make('Puntualidad Global', $punctuality . '%')
                 ->description('Porcentaje de puntualidad')
