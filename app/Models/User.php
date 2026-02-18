@@ -29,6 +29,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'phone',
         'identification_number',
         'is_active',
+        'google_avatar_url',
         'avatar_path',
     ];
 
@@ -139,6 +140,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatar_path ? route('media.public', ['path' => $this->avatar_path]) : null;
+        $googleAvatarUrl = trim((string) $this->google_avatar_url);
+
+        if ($googleAvatarUrl !== '' && filter_var($googleAvatarUrl, FILTER_VALIDATE_URL)) {
+            return $googleAvatarUrl;
+        }
+
+        return null;
     }
 }

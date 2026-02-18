@@ -3,15 +3,33 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Auth\Pages\Login as BaseLogin;
-use Filament\Forms\Components\Checkbox;
-use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
+use Illuminate\Contracts\Support\Htmlable;
 
 class Login extends BaseLogin
 {
-    protected function getRememberFormComponent(): Component
+    protected string $view = 'filament.auth.login';
+
+    protected Width | string | null $maxWidth = Width::SevenExtraLarge;
+
+    public function form(Schema $schema): Schema
     {
-        return Checkbox::make('remember')
-            ->label(__('filament-panels::auth/pages/login.form.remember.label'))
-            ->default(true);
+        return $schema->components([]);
+    }
+
+    public function hasLogo(): bool
+    {
+        return false;
+    }
+
+    public function getHeading(): string | Htmlable | null
+    {
+        return null;
+    }
+
+    public function getSubheading(): string | Htmlable | null
+    {
+        return null;
     }
 }
