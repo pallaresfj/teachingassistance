@@ -47,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => '#f8c508',
                 'danger' => '#f50404',
             ])
+            ->favicon(asset('images/favicon.png'))
             ->renderHook(
                 'panels::head.end',
                 fn () => view('filament.hooks.mobile-actions-styles'),

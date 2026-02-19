@@ -18,6 +18,7 @@ return [
     'session_check_interval_seconds' => (int) env('SSO_SESSION_CHECK_INTERVAL_SECONDS', 60),
     'session_check_timeout_seconds' => (int) env('SSO_SESSION_CHECK_TIMEOUT_SECONDS', 12),
     'session_check_prompt' => env('SSO_SESSION_CHECK_PROMPT', 'none'),
+    'session_check_redirect_uri' => env('SSO_SESSION_CHECK_REDIRECT_URI', rtrim((string) env('APP_URL', 'http://localhost'), '/').'/sso/session-check/callback'),
     'session_watchdog_enabled' => (bool) env('SSO_SESSION_WATCHDOG_ENABLED', false),
     'session_watchdog_interval_seconds' => (int) env('SSO_SESSION_WATCHDOG_INTERVAL_SECONDS', 30),
     'idp_logout_url' => env('SSO_IDP_LOGOUT_URL', 'http://localhost:9000/logout'),
